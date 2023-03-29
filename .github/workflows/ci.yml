@@ -1,0 +1,58 @@
+name: Go
+
+on:
+  pull_request:
+    branches: 
+      - main
+    paths: 
+      - cmd/**
+      - internal/**
+      - Dockerfile
+      - docker-compose.yml
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Set up Go
+      uses: actions/setup-go@v4
+      with:
+        go-version: 1.19
+
+    - name: Build
+      run: go build -v ./...
+      
+    - name: Go Vet
+      run: go vet ./...
+      
+    - name: Go Tidy
+      run: go mod tidy && git diff --exit-code
+
+    - name: Go Mod
+      run: go mod download
+
+    - name: Go Mod Verify
+      run: go mod verify
+      
+    - name: Go Generate
+      run: go generate ./... && git diff --exit-code
+
+    - name: Go Build
+      run: go build -o /dev/null ./...
+
+
+    - name: Test
+      run: go test -v -coverprofile=coverage.txt -shuffle=on ./...
+
+    - name: Upload Coverage
+      if: ${{ !inputs.skipTests }}  # upload when we really run our tests
+      uses: codecov/codecov-action@v3
+      continue-on-error: true  # we don't care if it fails
+      with:
+          token: ${{secrets.CODECOV_TOKEN}}  # set in repository settings
+          file: ./coverage.txt  # file from the previous step
+          fail_ci_if_error: false
+    
