@@ -1,18 +1,30 @@
 package main
 
-import "testing"
+import (
+	"bytes"
+	"encoding/json"
+	"net/http"
+	"net/http/httptest"
+	"net/url"
+	"testing"
+)
 
-func add1(x int) int {
-	return x + 1
-}
+func TestUserSignUp(t *testing.T) {
+	testURL, _ := url.Parse("http://localhost:8080")
+	gateway := NewGateway(testURL)
 
-func TestAdd(t *testing.T) {
-	value := 1
+	w := httptest.NewRecorder()
 
-	got := add1(value)
-	want := 2
+	body, _ := json.Marshal(SignUpData{"user@abc.com", "1234"})
+	req, _ := http.NewRequest("POST", "/users", bytes.NewReader(body))
+	gateway.ServeHTTP(w, req)
+	
+	if w.Code != http.StatusOK {
+		t.Errorf("Got %d, want %d", w.Code, http.StatusOK)
+	}
 
-	if got != want {
-		t.Errorf("got %d want %d given, %d", got, want, value)
+	expectedJsonResponse, _ := json.Marshal(AuthData{"123", "abc", "xyz"})
+	if w.Body.String() !=  string(expectedJsonResponse){
+		t.Errorf("Got %s, want %s", w.Body.String(), string(expectedJsonResponse))
 	}
 }
