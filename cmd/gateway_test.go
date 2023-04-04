@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
@@ -34,12 +33,13 @@ func TestUserSignUp(t *testing.T) {
 		}))
 		defer server.Close()
 
-		fmt.Printf("url: %s", server.URL)
 		url, _ := url.Parse(server.URL)
-		gateway := NewGateway(url)
+		gateway := NewGateway(func(p Proxy, r *gin.Engine) {
+			r.POST("/test", p(url))
+		})
 
 		w := CreateTestResponseRecorder()
-		req, _ := http.NewRequest("POST", "/users", nil)
+		req, _ := http.NewRequest("POST", "/test", nil)
 
 		gateway.ServeHTTP(w, req)
 
