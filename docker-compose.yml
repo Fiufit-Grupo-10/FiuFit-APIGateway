@@ -1,10 +1,20 @@
 version: "3.8"
 services:
-  web:
+  web-dev:
     build:
       context: .
-      dockerfile: Dockerfile
     ports:
       - 8080:8080
     volumes:
       - ./:/app
+    command: air
+
+  unit-tests:
+    build:
+      context: .
+    ports:
+      - 8080:8080
+    volumes:
+      - ./:/app
+    command: bash -c ./scripts/unit_tests.sh
+    
