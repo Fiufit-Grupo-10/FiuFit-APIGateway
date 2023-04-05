@@ -1,4 +1,4 @@
-module go.template.service
+module fiufit.api.gateway
 
 go 1.18
 
