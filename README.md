@@ -1,4 +1,4 @@
-![ci](https://github.com/Fiufit-Grupo-10/go-template/actions/workflows/ci.yml/badge.svg)
+![ci](https://github.com/Fiufit-Grupo-10/FiuFit-APIGateway/actions/workflows/ci.yml/badge.svg)
 [![codecov](https://codecov.io/gh/Fiufit-Grupo-10/go-template/branch/main/graph/badge.svg?token=CQMMLS2MR5)](https://codecov.io/gh/Fiufit-Grupo-10/go-template)
 # go-template
 Template for go services
