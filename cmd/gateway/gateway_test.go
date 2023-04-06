@@ -1,4 +1,4 @@
-package main
+package gateway
 
 import (
 	"bytes"
@@ -39,7 +39,7 @@ func TestGateway(t *testing.T) {
 		defer server.Close()
 
 		url, _ := url.Parse(server.URL)
-		gateway := NewGateway(func(r *gin.Engine) {
+		gateway := New(func(r *gin.Engine) {
 			r.POST("/test", reverseProxy(url))
 		})
 
@@ -60,7 +60,7 @@ func TestGateway(t *testing.T) {
 			defer usersService.Close()
 			usersServiceURL, _ := url.Parse(usersService.URL)
 			s := AuthTestService{}
-			gateway := NewGateway(func(r *gin.Engine) {
+			gateway := New(func(r *gin.Engine) {
 				r.POST("/users", createUser(usersServiceURL, s))
 			})
 
@@ -88,7 +88,7 @@ func TestGateway(t *testing.T) {
 			defer usersService.Close()
 			usersServiceURL, _ := url.Parse(usersService.URL)
 			s := AuthTestService{}
-			gateway := NewGateway(func(r *gin.Engine) {
+			gateway := New(func(r *gin.Engine) {
 				r.POST("/users", createUser(usersServiceURL, s))
 			})
 

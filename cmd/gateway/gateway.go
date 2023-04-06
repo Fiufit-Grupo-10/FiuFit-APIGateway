@@ -1,4 +1,4 @@
-package main
+package gateway
 
 import (
 	"bytes"
@@ -30,7 +30,7 @@ func (g *Gateway) Run(addr ...string) {
 	g.router.Run(addr...)
 }
 
-func NewGateway(configs ...RouterConfig) *Gateway {
+func New(configs ...RouterConfig) *Gateway {
 	router := gin.Default()
 	for _, option := range configs {
 		option(router)
@@ -82,4 +82,8 @@ func createUser(usersService *url.URL, s auth.Service) gin.HandlerFunc {
 		// Handle this better
 		c.JSON(http.StatusCreated, userData)
 	}
+}
+
+func Users(url *url.URL, auth auth.Service) RouterConfig {
+	return func(router *gin.Engine) { router.POST("/users", createUser(url, auth)) }
 }

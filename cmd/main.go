@@ -3,7 +3,9 @@ package main
 import (
 	"context"
 	"log"
-
+	"net/url"
+	"os"
+	"fiufit.api.gateway/cmd/gateway"
 	"fiufit.api.gateway/internal/auth"
 )
 
@@ -13,14 +15,17 @@ func main() {
 	ctx := context.Background()
 	f, err := auth.GetFirebase(ctx)
 	if err != nil {
-		log.Fatal("nil pointer")
+		log.Fatal("Couldn't start firebase service")
 	}
-	_, err = f.CreateUser(auth.SignUpModel{Username: "user3", Email: "user3@example.com", Password: "123456"})
-	// Send the error as string in request
+	rawURL, found := os.LookupEnv("USERS_URL")
+	if !found {
+		log.Fatal("USERS_URL enviroment variable not found")
+	}
+
+	usersURL, err := url.Parse(rawURL)
 	if err != nil {
-		log.Fatalf("%s", err)
+		log.Fatalf("Error parsing URL: %s", usersURL)
 	}
-	// r := gin.Default()
-	// r.GET("/ping", func(c *gin.Context) { c.JSON(http.StatusOK, "pong!") })
-	// r.Run() // listen and serve on 0.0.0.0:8080
+	gateway := gateway.New(gateway.Users(usersURL, f))
+	gateway.Run()
 }
