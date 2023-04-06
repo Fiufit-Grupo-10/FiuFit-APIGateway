@@ -13,5 +13,11 @@ type AuthorizedModel struct {
 }
 
 type Service interface {
-	CreateUser(data SignUpModel) (AuthorizedModel, error)
+	CreateUser(data SignUpModel) (UserModel, error)
+}
+
+type UserModel struct {
+	UID      string `json:"uid"`
+	Email    string `json:"email"`
+	Username string `json:"username"`
 }

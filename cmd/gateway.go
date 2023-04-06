@@ -40,7 +40,6 @@ func NewGateway(configs ...RouterConfig) *Gateway {
 
 func reverseProxy(url *url.URL) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		// Change for a custom director
 		proxy := httputil.NewSingleHostReverseProxy(url)
 		proxy.ServeHTTP(c.Writer, c.Request)
 	}
@@ -52,21 +51,20 @@ func createUser(usersService *url.URL, s auth.Service) gin.HandlerFunc {
 		err := c.ShouldBindJSON(&signUpData)
 		if err != nil {
 			c.AbortWithStatus(http.StatusBadRequest)
+			return
 		}
 
-		authData, err := s.CreateUser(signUpData)
+		//TODO: This error should send the context to the client
+		userData, err := s.CreateUser(signUpData)
 		if err != nil {
-			c.AbortWithStatus(http.StatusForbidden)
-		}
-
-		uid := authData.UID
-		userData := UserModel{
-			uid, signUpData.Email, signUpData.Username,
+			c.AbortWithStatusJSON(http.StatusConflict, gin.H{"error": err.Error()})
+			return
 		}
 
 		userDataJSON, err := json.Marshal(userData)
 		if err != nil {
 			c.AbortWithStatus(http.StatusInternalServerError)
+			return
 		}
 
 		resultChannel := make(chan error)
@@ -79,7 +77,9 @@ func createUser(usersService *url.URL, s auth.Service) gin.HandlerFunc {
 		err = <-resultChannel
 		if err != nil {
 			c.AbortWithStatus(http.StatusInternalServerError)
+			return
 		}
-		c.JSON(http.StatusCreated, authData)
+		// Handle this better
+		c.JSON(http.StatusCreated, userData)
 	}
 }
