@@ -3,12 +3,14 @@ package main
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 
-	"fiufit.api.gateway/internal/auth"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
 	"testing"
+
+	"fiufit.api.gateway/internal/auth"
 
 	"github.com/gin-gonic/gin"
 )
@@ -72,16 +74,46 @@ func TestGateway(t *testing.T) {
 
 			assertStatusCode(t, w.Code, http.StatusCreated)
 
-			authData := auth.AuthorizedModel{UID: "123", Token: "abc", RefreshToken: "xyz"}
-			authDataJSON, _ := json.Marshal(authData)
+			userData := auth.UserModel{UID: "123", Username: "abc", Email: "abc@xyz.com"}
+			authDataJSON, _ := json.Marshal(userData)
+			assertBody(t, w.Body.String(), string(authDataJSON))
+		})
+
+	t.Run("Receive a request to sign up a new user and fail to create it because the password is too short, the client should receive info about the error.",
+		func(t *testing.T) {
+			usersService := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				w.WriteHeader(http.StatusCreated)
+				w.Header().Set("Content-Type", "application/text")
+			}))
+			defer usersService.Close()
+			usersServiceURL, _ := url.Parse(usersService.URL)
+			s := AuthTestService{}
+			gateway := NewGateway(func(r *gin.Engine) {
+				r.POST("/users", createUser(usersServiceURL, s))
+			})
+
+			signUpData := auth.SignUpModel{
+				Email: "abc@xyz.com", Username: "abc", Password: "12",
+			}
+			signUpDataJSON, _ := json.Marshal(signUpData)
+			w := CreateTestResponseRecorder()
+			req, _ := http.NewRequest("POST", "/users", bytes.NewReader(signUpDataJSON))
+			gateway.ServeHTTP(w, req)
+
+			assertStatusCode(t, w.Code, http.StatusConflict)
+
+			authDataJSON, _ := json.Marshal(gin.H{"error": "too short"})
 			assertBody(t, w.Body.String(), string(authDataJSON))
 		})
 }
 
 type AuthTestService struct{}
 
-func (a AuthTestService) CreateUser(s auth.SignUpModel) (auth.AuthorizedModel, error) {
-	return auth.AuthorizedModel{UID: "123", Token: "abc", RefreshToken: "xyz"}, nil
+func (a AuthTestService) CreateUser(s auth.SignUpModel) (auth.UserModel, error) {
+	if len(s.Password) < 3 {
+		return auth.UserModel{}, errors.New("too short")
+	}
+	return auth.UserModel{UID: "123", Username: "abc", Email: "abc@xyz.com"}, nil
 }
 
 // The types below are necessary for tests to run Gin requires that
