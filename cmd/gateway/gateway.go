@@ -45,6 +45,8 @@ func reverseProxy(url *url.URL) gin.HandlerFunc {
 	}
 }
 
+// Returns the handler charged with creating an user. It takes the URL
+// of the users service and an auth Service as argument.
 func createUser(usersService *url.URL, s auth.Service) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var signUpData auth.SignUpModel
@@ -54,13 +56,14 @@ func createUser(usersService *url.URL, s auth.Service) gin.HandlerFunc {
 			return
 		}
 
-		//TODO: This error should send the context to the client
 		userData, err := s.CreateUser(signUpData)
 		if err != nil {
 			c.AbortWithStatusJSON(http.StatusConflict, gin.H{"error": err.Error()})
 			return
 		}
 
+		// Should never fail unless the userData
+		// representation becomes an unsupported type
 		userDataJSON, err := json.Marshal(userData)
 		if err != nil {
 			c.AbortWithStatus(http.StatusInternalServerError)
@@ -70,13 +73,17 @@ func createUser(usersService *url.URL, s auth.Service) gin.HandlerFunc {
 		resultChannel := make(chan error)
 		go func(url string, body io.Reader) {
 			response, err := http.Post(url, "application/json", body)
+			if err != nil {
+				resultChannel <- err
+				return
+			}
 			response.Body.Close()
-			resultChannel <- err
+			resultChannel <- nil
 		}(usersService.String(), bytes.NewReader(userDataJSON))
 
 		err = <-resultChannel
 		if err != nil {
-			c.AbortWithStatus(http.StatusInternalServerError)
+			c.AbortWithStatus(http.StatusBadGateway)
 			return
 		}
 		// Handle this better

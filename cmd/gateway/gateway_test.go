@@ -105,6 +105,42 @@ func TestGateway(t *testing.T) {
 			authDataJSON, _ := json.Marshal(gin.H{"error": "too short"})
 			assertBody(t, w.Body.String(), string(authDataJSON))
 		})
+	t.Run("Receiving an invalid body should return a response with status Bad Request", func(t *testing.T) {
+		usersService := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			w.WriteHeader(http.StatusCreated)
+			w.Header().Set("Content-Type", "application/text")
+		}))
+		defer usersService.Close()
+		usersServiceURL, _ := url.Parse(usersService.URL)
+		s := AuthTestService{}
+		gateway := New(func(r *gin.Engine) {
+			r.POST("/users", createUser(usersServiceURL, s))
+		})
+
+		w := CreateTestResponseRecorder()
+		req, _ := http.NewRequest("POST", "/users", bytes.NewReader([]byte("not json")))
+		gateway.ServeHTTP(w, req)
+
+		assertStatusCode(t, w.Code, http.StatusBadRequest)
+	})
+
+	t.Run("If the client tries to create an user and the Users service is unreachable the gateway returns Bad Gateway", func(t *testing.T) {
+		url, _ := url.Parse("http://localhost:0")
+		s := AuthTestService{}
+		gateway := New(func(r *gin.Engine) {
+			r.POST("/users", createUser(url, s))
+		})
+
+		signUpData := auth.SignUpModel{
+			Email: "abc@xyz.com", Username: "abc", Password: "123",
+		}
+		signUpDataJSON, _ := json.Marshal(signUpData)
+		w := CreateTestResponseRecorder()
+		req, _ := http.NewRequest("POST", "/users", bytes.NewReader(signUpDataJSON))
+		gateway.ServeHTTP(w, req)
+
+		assertStatusCode(t, w.Code, http.StatusBadGateway)
+	})
 }
 
 type AuthTestService struct{}
