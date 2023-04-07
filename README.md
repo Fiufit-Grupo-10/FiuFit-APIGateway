@@ -1,5 +1,5 @@
 ![ci](https://github.com/Fiufit-Grupo-10/FiuFit-APIGateway/actions/workflows/ci.yml/badge.svg)
-[![codecov](https://codecov.io/gh/Fiufit-Grupo-10/FiuFit-APIGateway/branch/main/graph/badge.svg?token=CQMMLS2MR5)](https://codecov.io/gh/Fiufit-Grupo-10/go-template)
+[![codecov](https://codecov.io/gh/Fiufit-Grupo-10/FiuFit-APIGateway/branch/main/graph/badge.svg?token=CQMMLS2MR5)](https://codecov.io/gh/Fiufit-Grupo-10/FiuFit-APIGateway)
 # go-template
 Template for go services
 
