@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
+	"io"
 
 	"net/http"
 	"net/http/httptest"
@@ -124,7 +125,7 @@ func TestGateway(t *testing.T) {
 		assertStatusCode(t, w.Code, http.StatusBadRequest)
 	})
 
-	t.Run("If the client tries to create an user and the Users service is unreachable the gateway returns Bad Gateway", func(t *testing.T) {
+	t.Run("If the client tries to create an user and the Users service is unreachable the gateway returns Service Unavailable", func(t *testing.T) {
 		url, _ := url.Parse("http://localhost:0")
 		s := AuthTestService{}
 		gateway := New(func(r *gin.Engine) {
@@ -139,8 +140,62 @@ func TestGateway(t *testing.T) {
 		req, _ := http.NewRequest("POST", "/users", bytes.NewReader(signUpDataJSON))
 		gateway.ServeHTTP(w, req)
 
-		assertStatusCode(t, w.Code, http.StatusBadGateway)
+		assertStatusCode(t, w.Code, http.StatusServiceUnavailable)
 	})
+
+	t.Run("Receive a request to update the profile of a certain user and forward the request to the users service",
+		func(t *testing.T) {
+			usersService := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				w.WriteHeader(http.StatusOK)
+				w.Header().Set("Content-Type", "application/json")
+				body, _ := io.ReadAll(r.Body)
+				defer r.Body.Close()
+				w.Write(body)
+			}))
+			defer usersService.Close()
+			usersServiceURL, _ := url.Parse(usersService.URL)
+
+			s := AuthTestService{}
+			gateway := New(func(r *gin.Engine) {
+				r.PUT("/users/:id/profile", updateProfile(usersServiceURL, s))
+			})
+
+			profileData := struct {Data int}{Data: 1}
+			profileDataJSON, _ := json.Marshal(profileData)
+			w := CreateTestResponseRecorder()
+			req, _ := http.NewRequest(http.MethodPut, "/users/1/profile", bytes.NewReader(profileDataJSON))
+			gateway.ServeHTTP(w, req)
+
+			assertStatusCode(t, w.Code, http.StatusOK)
+			assertBody(t, w.Body.String(), string(profileDataJSON))
+		})
+
+		t.Run("Receive a request to update the profile of an authorized user and forward the request to the users service",
+		func(t *testing.T) {
+			usersService := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				w.WriteHeader(http.StatusOK)
+				w.Header().Set("Content-Type", "application/json")
+				body, _ := io.ReadAll(r.Body)
+				defer r.Body.Close()
+				w.Write(body)
+			}))
+			defer usersService.Close()
+			usersServiceURL, _ := url.Parse(usersService.URL)
+
+			s := AuthTestService{}
+			gateway := New(func(r *gin.Engine) {
+				r.PUT("/users/:id/profile", authorizeAccess(s),updateProfile(usersServiceURL, s))
+			})
+
+			profileData := struct {Data int}{Data: 1}
+			profileDataJSON, _ := json.Marshal(profileData)
+			w := CreateTestResponseRecorder()
+			req, _ := http.NewRequest(http.MethodPut, "/users/1/profile", bytes.NewReader(profileDataJSON))
+			gateway.ServeHTTP(w, req)
+
+			assertStatusCode(t, w.Code, http.StatusOK)
+			assertBody(t, w.Body.String(), string(profileDataJSON))
+		})
 }
 
 type AuthTestService struct{}

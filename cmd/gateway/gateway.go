@@ -50,6 +50,7 @@ func reverseProxy(url *url.URL) gin.HandlerFunc {
 func createUser(usersService *url.URL, s auth.Service) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var signUpData auth.SignUpModel
+		// FIX: Doesn't check that all fields are present
 		err := c.ShouldBindJSON(&signUpData)
 		if err != nil {
 			c.AbortWithStatus(http.StatusBadRequest)
@@ -83,12 +84,17 @@ func createUser(usersService *url.URL, s auth.Service) gin.HandlerFunc {
 
 		err = <-resultChannel
 		if err != nil {
-			c.AbortWithStatus(http.StatusBadGateway)
+			// CHECK: retry?
+			c.AbortWithStatus(http.StatusServiceUnavailable)
 			return
 		}
 		// Handle this better
 		c.JSON(http.StatusCreated, userData)
 	}
+}
+
+func updateProfile(usersService *url.URL, s auth.Service) gin.HandlerFunc {
+	return reverseProxy(usersService)
 }
 
 func Users(url *url.URL, auth auth.Service) RouterConfig {
