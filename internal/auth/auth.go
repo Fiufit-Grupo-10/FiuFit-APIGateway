@@ -14,6 +14,7 @@ type AuthorizedModel struct {
 
 type Service interface {
 	CreateUser(data SignUpModel) (UserModel, error)
+	VerifyToken(token string) (string, error)
 }
 
 type UserModel struct {

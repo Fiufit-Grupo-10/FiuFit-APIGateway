@@ -48,3 +48,7 @@ func (f *Firebase) CreateUser(userData SignUpModel) (UserModel, error) {
 	}
 	return user, err
 }
+
+func (f *Firebase) VerifyToken(token string) (string, error) {
+	return "", nil
+}

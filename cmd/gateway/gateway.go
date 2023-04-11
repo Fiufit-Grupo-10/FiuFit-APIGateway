@@ -7,6 +7,8 @@ import (
 	"net/http"
 	"net/http/httputil"
 	"net/url"
+	"path"
+	"strconv"
 
 	"fiufit.api.gateway/internal/auth"
 	"github.com/gin-gonic/gin"
@@ -38,12 +40,7 @@ func New(configs ...RouterConfig) *Gateway {
 	return &Gateway{router}
 }
 
-func reverseProxy(url *url.URL) gin.HandlerFunc {
-	return func(c *gin.Context) {
-		proxy := httputil.NewSingleHostReverseProxy(url)
-		proxy.ServeHTTP(c.Writer, c.Request)
-	}
-}
+
 
 // Returns the handler charged with creating an user. It takes the URL
 // of the users service and an auth Service as argument.
@@ -70,33 +67,36 @@ func createUser(usersService *url.URL, s auth.Service) gin.HandlerFunc {
 			c.AbortWithStatus(http.StatusInternalServerError)
 			return
 		}
+		
+		c.Request.Body = io.NopCloser(bytes.NewReader(userDataJSON))
+		c.Request.Header.Set("Content-Length", strconv.Itoa(len(userDataJSON)))
+		c.Request.ContentLength = int64(len(userDataJSON))
 
-		resultChannel := make(chan error)
-		go func(url string, body io.Reader) {
-			response, err := http.Post(url, "application/json", body)
-			if err != nil {
-				resultChannel <- err
-				return
-			}
-			response.Body.Close()
-			resultChannel <- nil
-		}(usersService.String(), bytes.NewReader(userDataJSON))
-
-		err = <-resultChannel
-		if err != nil {
-			// CHECK: retry?
-			c.AbortWithStatus(http.StatusServiceUnavailable)
-			return
-		}
-		// Handle this better
+		proxy :=  httputil.NewSingleHostReverseProxy(usersService)
+		proxy.ServeHTTP(c.Writer, c.Request)
+		
 		c.JSON(http.StatusCreated, userData)
 	}
 }
 
-func updateProfile(usersService *url.URL, s auth.Service) gin.HandlerFunc {
-	return reverseProxy(usersService)
-}
-
+// Sets the routes for the users endpoint
 func Users(url *url.URL, auth auth.Service) RouterConfig {
 	return func(router *gin.Engine) { router.POST("/users", createUser(url, auth)) }
+}
+
+func updateProfile(usersService *url.URL, s auth.Service) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		// This is it's own middleware, share with context
+		token := c.Request.Header.Get("Authorization")
+		uid, err := s.VerifyToken(token)
+		if err != nil {
+			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
+			return
+		}
+		// Set the endpoint to request in the users service
+		c.Request.URL.Path = path.Join(c.Request.URL.Path, uid)
+		
+		proxy :=  httputil.NewSingleHostReverseProxy(usersService)
+		proxy.ServeHTTP(c.Writer, c.Request)
+	}
 }
