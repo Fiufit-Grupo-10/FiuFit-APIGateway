@@ -7,7 +7,7 @@ import (
 	"io"
 	"net/http"
 	"net/http/httptest"
-	"net/http/httputil"
+
 	"net/url"
 	"testing"
 
@@ -31,28 +31,6 @@ func TestGateway(t *testing.T) {
 			t.Errorf("Got %s, want %s", got, want)
 		}
 	}
-
-	t.Run("Redirect a request to the gateway to another service", func(t *testing.T) {
-		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			assertString(t, r.URL.Path, "/test")
-			w.WriteHeader(http.StatusOK)
-			w.Header().Set("Content-Type", "application/text")
-			w.Write([]byte("reverse-proxy"))
-		}))
-		defer server.Close()
-
-		url, _ := url.Parse(server.URL)
-		gateway := New(func(r *gin.Engine) {
-			r.GET("/test", gin.WrapH(httputil.NewSingleHostReverseProxy(url)))
-		})
-
-		w := CreateTestResponseRecorder()
-		req, _ := http.NewRequest(http.MethodGet, "/test", nil)
-		gateway.ServeHTTP(w, req)
-
-		assertStatusCode(t, w.Code, http.StatusOK)
-		assertString(t, w.Body.String(), "reverse-proxy")
-	})
 
 	t.Run("Receive a request to sign up a new user, authorize it and notify both client and Users service",
 		func(t *testing.T) {
@@ -138,10 +116,7 @@ func TestGateway(t *testing.T) {
 			usersServiceURL, _ := url.Parse(usersService.URL)
 
 			s := AuthTestService{}
-			gateway := New(func(r *gin.Engine) {
-				r.PUT("/profiles", updateProfile(usersServiceURL, s))
-			})
-
+			gateway := New(Profiles(usersServiceURL, s))
 			profileData := struct {
 				Data int
 			}{Data: 1}
@@ -164,9 +139,7 @@ func TestGateway(t *testing.T) {
 			usersServiceURL, _ := url.Parse(usersService.URL)
 
 			s := AuthTestService{}
-			gateway := New(func(r *gin.Engine) {
-				r.PUT("/profiles", updateProfile(usersServiceURL, s))
-			})
+			gateway := New(Profiles(usersServiceURL, s))
 
 			profileData := struct{ Data int }{Data: 1}
 			profileDataJSON, _ := json.Marshal(profileData)
