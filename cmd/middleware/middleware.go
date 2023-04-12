@@ -20,7 +20,6 @@ func ReverseProxy(url *url.URL) gin.HandlerFunc {
 	return gin.WrapH(httputil.NewSingleHostReverseProxy(url))
 }
 
-
 func Authorize(s auth.Service) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		token := c.Request.Header.Get("Authorization")
@@ -54,13 +53,13 @@ func AddUIDToRequestURL() gin.HandlerFunc {
 
 // Returns the handler charged with creating an user. It takes the URL
 // of the users service and an auth Service as argument.
-func CreateUser(usersService *url.URL, s auth.Service) gin.HandlerFunc {
+func CreateUser(s auth.Service) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var signUpData auth.SignUpModel
 		// FIX: Doesn't check that all fields are present
 		err := c.ShouldBindJSON(&signUpData)
 		if err != nil {
-			c.AbortWithStatus(http.StatusBadRequest)
+			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
 		}
 
@@ -81,13 +80,5 @@ func CreateUser(usersService *url.URL, s auth.Service) gin.HandlerFunc {
 		c.Request.Body = io.NopCloser(bytes.NewReader(userDataJSON))
 		c.Request.Header.Set("Content-Length", strconv.Itoa(len(userDataJSON)))
 		c.Request.ContentLength = int64(len(userDataJSON))
-
-		proxy := httputil.NewSingleHostReverseProxy(usersService)
-		proxy.ServeHTTP(c.Writer, c.Request)
-
-		// Remove
-		c.JSON(http.StatusCreated, userData)
 	}
 }
-
-

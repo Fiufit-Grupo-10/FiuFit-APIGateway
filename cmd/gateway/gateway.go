@@ -36,9 +36,13 @@ func New(configs ...RouterConfig) *Gateway {
 
 // Sets the routes for the users endpoint
 func Users(url *url.URL, auth auth.Service) RouterConfig {
-	return func(router *gin.Engine) { router.POST("/users", middleware.CreateUser(url, auth)) }
+	return func(router *gin.Engine) {
+		router.POST("/users", middleware.CreateUser(auth), middleware.ReverseProxy(url))
+	}
 }
 
 func Profiles(url *url.URL, auth auth.Service) RouterConfig {
-	return func(router *gin.Engine) { router.PUT("/users", middleware.UpdateProfile(url, auth)) }
+	return func(router *gin.Engine) {
+		router.PUT("/users", middleware.Authorize(auth), middleware.AddUIDToRequestURL(), middleware.ReverseProxy(url))
+	}
 }
