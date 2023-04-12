@@ -50,5 +50,11 @@ func (f *Firebase) CreateUser(userData SignUpModel) (UserModel, error) {
 }
 
 func (f *Firebase) VerifyToken(token string) (string, error) {
-	return "", nil
+	ctx := context.Background()
+	// TODO: Decide whether or not to use CheckRevoked
+	tokenData, err := f.authClient.VerifyIDToken(ctx, token)
+	if err != nil {
+		return "", err
+	}
+	return tokenData.UID, nil
 }

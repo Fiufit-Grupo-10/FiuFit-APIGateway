@@ -2,14 +2,12 @@ package main
 
 import (
 	"context"
+	"fiufit.api.gateway/cmd/gateway"
+	"fiufit.api.gateway/internal/auth"
 	"log"
 	"net/url"
 	"os"
-	"fiufit.api.gateway/cmd/gateway"
-	"fiufit.api.gateway/internal/auth"
 )
-
-
 
 func main() {
 	ctx := context.Background()
@@ -26,6 +24,7 @@ func main() {
 	if err != nil {
 		log.Fatalf("Error parsing URL: %s", usersURL)
 	}
-	gateway := gateway.New(gateway.Users(usersURL, f))
+	
+	gateway := gateway.New(gateway.Users(usersURL, f), gateway.Profiles(usersURL, f))
 	gateway.Run()
 }
