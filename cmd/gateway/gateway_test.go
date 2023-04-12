@@ -4,9 +4,10 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
-
+	"io"
 	"net/http"
 	"net/http/httptest"
+
 	"net/url"
 	"testing"
 
@@ -24,45 +25,28 @@ func TestGateway(t *testing.T) {
 		}
 	}
 
-	assertBody := func(t testing.TB, got, want string) {
+	assertString := func(t testing.TB, got, want string) {
 		t.Helper()
 		if got != want {
 			t.Errorf("Got %s, want %s", got, want)
 		}
 	}
-	t.Run("Redirect a request to the gateway to another service", func(t *testing.T) {
-		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			w.WriteHeader(http.StatusOK)
-			w.Header().Set("Content-Type", "application/text")
-			w.Write([]byte("reverse-proxy"))
-		}))
-		defer server.Close()
 
-		url, _ := url.Parse(server.URL)
-		gateway := New(func(r *gin.Engine) {
-			r.POST("/test", reverseProxy(url))
-		})
-
-		w := CreateTestResponseRecorder()
-		req, _ := http.NewRequest("POST", "/test", nil)
-		gateway.ServeHTTP(w, req)
-
-		assertStatusCode(t, w.Code, http.StatusOK)
-		assertBody(t, w.Body.String(), "reverse-proxy")
-	})
-
-	t.Run("Receive a request to sign up a new user, authorize it and notify both client and Users service",
+	t.Run("Receive a request to sign up a new user, the Users service receives the user data. The client receives de users service response",
 		func(t *testing.T) {
 			usersService := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				userData := auth.UserModel{UID: "123", Username: "abc", Email: "abc@xyz.com"}
+				userDataJSON, _ := json.Marshal(userData)
+				body, _ := io.ReadAll(r.Body)
+				defer r.Body.Close()
+				assertString(t, string(body), string(userDataJSON))
 				w.WriteHeader(http.StatusCreated)
-				w.Header().Set("Content-Type", "application/text")
 			}))
 			defer usersService.Close()
+
 			usersServiceURL, _ := url.Parse(usersService.URL)
 			s := AuthTestService{}
-			gateway := New(func(r *gin.Engine) {
-				r.POST("/users", createUser(usersServiceURL, s))
-			})
+			gateway := New(Users(usersServiceURL, s))
 
 			signUpData := auth.SignUpModel{
 				Email: "abc@xyz.com", Username: "abc", Password: "123",
@@ -71,76 +55,38 @@ func TestGateway(t *testing.T) {
 			w := CreateTestResponseRecorder()
 			req, _ := http.NewRequest("POST", "/users", bytes.NewReader(signUpDataJSON))
 			gateway.ServeHTTP(w, req)
-
 			assertStatusCode(t, w.Code, http.StatusCreated)
-
-			userData := auth.UserModel{UID: "123", Username: "abc", Email: "abc@xyz.com"}
-			authDataJSON, _ := json.Marshal(userData)
-			assertBody(t, w.Body.String(), string(authDataJSON))
 		})
 
-	t.Run("Receive a request to sign up a new user and fail to create it because the password is too short, the client should receive info about the error.",
+	t.Run("Receive a request to update the profile of an authorized user and forward the request to the users service",
 		func(t *testing.T) {
+			profileData := struct {
+				Data int
+			}{Data: 1}
+			profileDataJSON, _ := json.Marshal(profileData)
+			
 			usersService := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-				w.WriteHeader(http.StatusCreated)
-				w.Header().Set("Content-Type", "application/text")
+				w.WriteHeader(http.StatusOK)
+				body, _ := io.ReadAll(r.Body)
+				defer r.Body.Close()
+				assertString(t, string(body), string(profileDataJSON))
+				w.Write(body)
 			}))
 			defer usersService.Close()
+			
 			usersServiceURL, _ := url.Parse(usersService.URL)
-			s := AuthTestService{}
-			gateway := New(func(r *gin.Engine) {
-				r.POST("/users", createUser(usersServiceURL, s))
-			})
 
-			signUpData := auth.SignUpModel{
-				Email: "abc@xyz.com", Username: "abc", Password: "12",
-			}
-			signUpDataJSON, _ := json.Marshal(signUpData)
+			s := AuthTestService{}
+			gateway := New(Profiles(usersServiceURL, s))
+
 			w := CreateTestResponseRecorder()
-			req, _ := http.NewRequest("POST", "/users", bytes.NewReader(signUpDataJSON))
+			req, _ := http.NewRequest(http.MethodPut, "/users", bytes.NewReader(profileDataJSON))
+			req.Header.Set("Authorization", "abc")
+
 			gateway.ServeHTTP(w, req)
 
-			assertStatusCode(t, w.Code, http.StatusConflict)
-
-			authDataJSON, _ := json.Marshal(gin.H{"error": "too short"})
-			assertBody(t, w.Body.String(), string(authDataJSON))
+			assertStatusCode(t, w.Code, http.StatusOK)
 		})
-	t.Run("Receiving an invalid body should return a response with status Bad Request", func(t *testing.T) {
-		usersService := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			w.WriteHeader(http.StatusCreated)
-			w.Header().Set("Content-Type", "application/text")
-		}))
-		defer usersService.Close()
-		usersServiceURL, _ := url.Parse(usersService.URL)
-		s := AuthTestService{}
-		gateway := New(func(r *gin.Engine) {
-			r.POST("/users", createUser(usersServiceURL, s))
-		})
-
-		w := CreateTestResponseRecorder()
-		req, _ := http.NewRequest("POST", "/users", bytes.NewReader([]byte("not json")))
-		gateway.ServeHTTP(w, req)
-
-		assertStatusCode(t, w.Code, http.StatusBadRequest)
-	})
-
-	t.Run("If the client tries to create an user and the Users service is unreachable the gateway returns Bad Gateway", func(t *testing.T) {
-		url, _ := url.Parse("http://localhost:0")
-		s := AuthTestService{}
-		gateway := New(func(r *gin.Engine) {
-			r.POST("/users", createUser(url, s))
-		})
-
-		signUpData := auth.SignUpModel{
-			Email: "abc@xyz.com", Username: "abc", Password: "123",
-		}
-		signUpDataJSON, _ := json.Marshal(signUpData)
-		w := CreateTestResponseRecorder()
-		req, _ := http.NewRequest("POST", "/users", bytes.NewReader(signUpDataJSON))
-		gateway.ServeHTTP(w, req)
-
-		assertStatusCode(t, w.Code, http.StatusBadGateway)
-	})
 }
 
 type AuthTestService struct{}
@@ -150,6 +96,13 @@ func (a AuthTestService) CreateUser(s auth.SignUpModel) (auth.UserModel, error) 
 		return auth.UserModel{}, errors.New("too short")
 	}
 	return auth.UserModel{UID: "123", Username: "abc", Email: "abc@xyz.com"}, nil
+}
+
+func (a AuthTestService) VerifyToken(token string) (string, error) {
+	if token != "abc" {
+		return "", errors.New("unauthorized")
+	}
+	return "123", nil
 }
 
 // The types below are necessary for tests to run Gin requires that

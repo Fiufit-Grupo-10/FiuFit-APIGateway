@@ -1,15 +1,11 @@
 package gateway
 
 import (
-	"bytes"
-	"encoding/json"
-	"io"
-	"net/http"
-	"net/http/httputil"
-	"net/url"
-
+	"fiufit.api.gateway/cmd/middleware"
 	"fiufit.api.gateway/internal/auth"
 	"github.com/gin-gonic/gin"
+	"net/http"
+	"net/url"
 )
 
 type AuthService interface {
@@ -38,59 +34,15 @@ func New(configs ...RouterConfig) *Gateway {
 	return &Gateway{router}
 }
 
-func reverseProxy(url *url.URL) gin.HandlerFunc {
-	return func(c *gin.Context) {
-		proxy := httputil.NewSingleHostReverseProxy(url)
-		proxy.ServeHTTP(c.Writer, c.Request)
-	}
-}
-
-// Returns the handler charged with creating an user. It takes the URL
-// of the users service and an auth Service as argument.
-func createUser(usersService *url.URL, s auth.Service) gin.HandlerFunc {
-	return func(c *gin.Context) {
-		var signUpData auth.SignUpModel
-		err := c.ShouldBindJSON(&signUpData)
-		if err != nil {
-			c.AbortWithStatus(http.StatusBadRequest)
-			return
-		}
-
-		userData, err := s.CreateUser(signUpData)
-		if err != nil {
-			c.AbortWithStatusJSON(http.StatusConflict, gin.H{"error": err.Error()})
-			return
-		}
-
-		// Should never fail unless the userData
-		// representation becomes an unsupported type
-		userDataJSON, err := json.Marshal(userData)
-		if err != nil {
-			c.AbortWithStatus(http.StatusInternalServerError)
-			return
-		}
-
-		resultChannel := make(chan error)
-		go func(url string, body io.Reader) {
-			response, err := http.Post(url, "application/json", body)
-			if err != nil {
-				resultChannel <- err
-				return
-			}
-			response.Body.Close()
-			resultChannel <- nil
-		}(usersService.String(), bytes.NewReader(userDataJSON))
-
-		err = <-resultChannel
-		if err != nil {
-			c.AbortWithStatus(http.StatusBadGateway)
-			return
-		}
-		// Handle this better
-		c.JSON(http.StatusCreated, userData)
-	}
-}
-
+// Sets the routes for the users endpoint
 func Users(url *url.URL, auth auth.Service) RouterConfig {
-	return func(router *gin.Engine) { router.POST("/users", createUser(url, auth)) }
+	return func(router *gin.Engine) {
+		router.POST("/users", middleware.CreateUser(auth), middleware.ReverseProxy(url))
+	}
+}
+
+func Profiles(url *url.URL, auth auth.Service) RouterConfig {
+	return func(router *gin.Engine) {
+		router.PUT("/users", middleware.Authorize(auth), middleware.AddUIDToRequestURL(), middleware.ReverseProxy(url))
+	}
 }
