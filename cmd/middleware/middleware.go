@@ -3,12 +3,10 @@ package middleware
 import (
 	"bytes"
 	"encoding/json"
-	"io"
 	"net/http"
 	"net/http/httputil"
 	"net/url"
 	"path"
-	"strconv"
 
 	"fiufit.api.gateway/internal/auth"
 	"github.com/gin-gonic/gin"
@@ -76,9 +74,12 @@ func CreateUser(s auth.Service) gin.HandlerFunc {
 			c.AbortWithStatus(http.StatusInternalServerError)
 			return
 		}
-
-		c.Request.Body = io.NopCloser(bytes.NewReader(userDataJSON))
-		c.Request.Header.Set("Content-Length", strconv.Itoa(len(userDataJSON)))
-		c.Request.ContentLength = int64(len(userDataJSON))
+		req, err := http.NewRequest(http.MethodPost, "/users",bytes.NewBuffer(userDataJSON))
+		if err != nil {
+			c.AbortWithStatus(http.StatusInternalServerError)
+			return
+		}
+		req.Header.Set("Content-Type", "application/json")
+		c.Request = req
 	}
 }

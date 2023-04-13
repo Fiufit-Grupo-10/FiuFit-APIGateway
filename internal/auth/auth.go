@@ -20,8 +20,8 @@ type Service interface {
 }
 
 type UserModel struct {
-	UID      string `json:"uid"`
 	Email    string `json:"email"`
 	Username string `json:"username"`
+	UID      string `json:"uid"`
 }
 

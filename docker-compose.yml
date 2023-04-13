@@ -3,12 +3,14 @@ services:
   web-dev:
     build:
       context: .
+      args:
+        - USERS_URL=$USERS_URL
     ports:
-      - 8080:8080
+      - "8080:8080"
     volumes:
       - ./:/app
     command: air
-
+    
   unit-tests:
     build:
       context: .
