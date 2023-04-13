@@ -38,6 +38,7 @@ func New(configs ...RouterConfig) *Gateway {
 func Users(url *url.URL, auth auth.Service) RouterConfig {
 	return func(router *gin.Engine) {
 		router.POST("/users", middleware.CreateUser(auth), middleware.ReverseProxy(url))
+		router.GET("/users", middleware.Authorize(auth), middleware.AddUIDToRequestURL(), middleware.ReverseProxy(url))
 	}
 }
 

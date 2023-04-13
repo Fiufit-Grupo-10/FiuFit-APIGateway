@@ -17,7 +17,7 @@ type Firebase struct {
 
 func GetFirebase(ctx context.Context) (*Firebase, error) {
 	// TODO change to env
-	opt := option.WithCredentialsFile("../../firebase.json")
+	opt := option.WithCredentialsFile("firebase.json")
 	app, err := firebase.NewApp(ctx, nil, opt)
 	if err != nil {
 		return nil, err
