@@ -14,7 +14,9 @@ type AuthorizedModel struct {
 
 type Service interface {
 	CreateUser(data SignUpModel) (UserModel, error)
-	VerifyToken(token string) (string, error)
+	// May change it's return type in the future depending in the
+	// info needed when validatin users
+	VerifyToken(token string) (string, error) 
 }
 
 type UserModel struct {
