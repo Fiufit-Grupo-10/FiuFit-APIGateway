@@ -15,7 +15,11 @@ import (
 const uidKey string = "User-UID"
 
 func ReverseProxy(url *url.URL) gin.HandlerFunc {
-	return gin.WrapH(httputil.NewSingleHostReverseProxy(url))
+	return func (c *gin.Context) {
+		proxy := httputil.NewSingleHostReverseProxy(url)
+		c.Request.Host = url.Host
+		proxy.ServeHTTP(c.Writer, c.Request)
+	}
 }
 
 func AuthorizeUser(s auth.Service) gin.HandlerFunc {

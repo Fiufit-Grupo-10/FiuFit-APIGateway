@@ -37,19 +37,15 @@ func New(configs ...RouterConfig) *Gateway {
 // Sets the routes for the users endpoint
 func Users(url *url.URL, auth auth.Service) RouterConfig {
 	return func(router *gin.Engine) {
-		router.POST("/users", middleware.CreateUser(auth), middleware.ReverseProxy(url))
-		router.GET("/users", middleware.AuthorizeUser(auth), middleware.AddUIDToRequestURL(), middleware.ReverseProxy(url))
-	}
-}
-
-func Profiles(url *url.URL, auth auth.Service) RouterConfig {
-	return func(router *gin.Engine) {
-		router.PUT("/users", middleware.AuthorizeUser(auth), middleware.AddUIDToRequestURL(), middleware.ReverseProxy(url))
+		proxy := middleware.ReverseProxy(url)
+		router.POST("/users", middleware.CreateUser(auth), proxy)
+		router.GET("/users", middleware.AuthorizeUser(auth), middleware.AddUIDToRequestURL(), proxy)
+		router.PUT("/users", middleware.AuthorizeUser(auth), middleware.AddUIDToRequestURL(), proxy)
 	}
 }
 
 func Admin(url *url.URL, auth auth.Service) RouterConfig {
 	return func(router *gin.Engine) {
-		router.POST("/admin", middleware.AuthorizeUser(auth), middleware.AuthorizeAdmin(url), middleware.CreateUser(auth), middleware.ReverseProxy(url))
+		router.POST("/admins", middleware.AuthorizeUser(auth), middleware.AuthorizeAdmin(url), middleware.CreateUser(auth), middleware.ReverseProxy(url))
 	}
 }

@@ -78,7 +78,7 @@ func TestGateway(t *testing.T) {
 			usersServiceURL, _ := url.Parse(usersService.URL)
 
 			s := AuthTestService{}
-			gateway := New(Profiles(usersServiceURL, s))
+			gateway := New(Users(usersServiceURL, s))
 
 			w := CreateTestResponseRecorder()
 			req, _ := http.NewRequest(http.MethodPut, "/users", bytes.NewReader(profileDataJSON))
@@ -114,7 +114,7 @@ func TestGateway(t *testing.T) {
 	t.Run("Receive a request to create a new admin, the one making the request is an admin", func(t *testing.T) {
 		usersService := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			if r.Method == http.MethodGet {
-				assertString(t, r.URL.Path, "/admin/123")
+				assertString(t, r.URL.Path, "/admins/123")
 			}
 			w.WriteHeader(http.StatusOK)
 		}))
@@ -129,7 +129,7 @@ func TestGateway(t *testing.T) {
 		}
 		signUpDataJSON, _ := json.Marshal(signUpData)
 		w := CreateTestResponseRecorder()
-		req, _ := http.NewRequest(http.MethodPost, "/admin", bytes.NewReader(signUpDataJSON))
+		req, _ := http.NewRequest(http.MethodPost, "/admins", bytes.NewReader(signUpDataJSON))
 		req.Header.Set("Authorization", "abc")
 		gateway.ServeHTTP(w, req)
 	})
@@ -137,7 +137,7 @@ func TestGateway(t *testing.T) {
 	t.Run("Receive a request to create a new admin, the one making the request isn't an admin, returns Unauthorized", func(t *testing.T) {
 		usersService := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			if r.Method == http.MethodGet {
-				assertString(t, r.URL.Path, "/admin/123")
+				assertString(t, r.URL.Path, "/admins/123")
 			}
 			w.WriteHeader(http.StatusNotFound)
 		}))
@@ -152,7 +152,7 @@ func TestGateway(t *testing.T) {
 		}
 		signUpDataJSON, _ := json.Marshal(signUpData)
 		w := CreateTestResponseRecorder()
-		req, _ := http.NewRequest(http.MethodPost, "/admin", bytes.NewReader(signUpDataJSON))
+		req, _ := http.NewRequest(http.MethodPost, "/admins", bytes.NewReader(signUpDataJSON))
 		req.Header.Set("Authorization", "abc")
 		gateway.ServeHTTP(w, req)
 		assertStatusCode(t, w.Code, http.StatusUnauthorized)
