@@ -18,7 +18,7 @@ func ReverseProxy(url *url.URL) gin.HandlerFunc {
 	return gin.WrapH(httputil.NewSingleHostReverseProxy(url))
 }
 
-func Authorize(s auth.Service) gin.HandlerFunc {
+func AuthorizeUser(s auth.Service) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		token := c.Request.Header.Get("Authorization")
 		uid, err := s.VerifyToken(token)
@@ -31,22 +31,57 @@ func Authorize(s auth.Service) gin.HandlerFunc {
 	}
 }
 
-func AddUIDToRequestURL() gin.HandlerFunc {
+func AuthorizeAdmin(url *url.URL) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		anyUID, found := c.Get(uidKey)
-		if !found {
+		UID, ok := getUID(c)
+		if !ok {
 			c.AbortWithStatus(http.StatusInternalServerError)
 			return
 		}
-		UID, ok := anyUID.(string)
-		// Should never fail, dev error
+		url.Path = path.Join(url.Path, "admin", UID)
+		resultChannel := make(chan bool)
+		go func(rawURL string) {
+			response, err := http.Get(rawURL)
+			if err != nil || response.StatusCode != http.StatusOK {
+				resultChannel <- false
+				return
+			}
+			resultChannel <- true
+		}(url.String())
+
+		ok = <-resultChannel
+		if !ok {
+			c.AbortWithStatus(http.StatusUnauthorized)
+			return
+		}
+	}
+}
+func AddUIDToRequestURL() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		UID, ok := getUID(c)
 		if !ok {
 			c.AbortWithStatus(http.StatusInternalServerError)
 			return
 		}
 		// Set the endpoint to request in the users service
 		c.Request.URL.Path = path.Join(c.Request.URL.Path, UID)
+		// TODO: Remove
+		c.Request.Header.Set("Content-Type", "application/json")
 	}
+}
+
+func getUID(c *gin.Context) (string, bool) {
+	anyUID, found := c.Get(uidKey)
+	if !found {
+		return "", found
+	}
+	UID, ok := anyUID.(string)
+	// Should never fail, dev error
+	if !ok {
+		return "", ok
+	}
+
+	return UID, true
 }
 
 // Returns the handler charged with creating an user. It takes the URL
@@ -74,7 +109,7 @@ func CreateUser(s auth.Service) gin.HandlerFunc {
 			c.AbortWithStatus(http.StatusInternalServerError)
 			return
 		}
-		req, err := http.NewRequest(http.MethodPost, "/users",bytes.NewBuffer(userDataJSON))
+		req, err := http.NewRequest(http.MethodPost, "/users", bytes.NewBuffer(userDataJSON))
 		if err != nil {
 			c.AbortWithStatus(http.StatusInternalServerError)
 			return

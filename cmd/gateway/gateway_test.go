@@ -32,7 +32,7 @@ func TestGateway(t *testing.T) {
 		}
 	}
 
-	t.Run("Receive a request to sign up a new user, the Users service receives the user data. The client receives de users service response",
+	t.Run("Receive a request to sign up a new user",
 		func(t *testing.T) {
 			usersService := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 				userData := auth.UserModel{UID: "123", Username: "abc", Email: "abc@xyz.com"}
@@ -64,8 +64,9 @@ func TestGateway(t *testing.T) {
 				Data int
 			}{Data: 1}
 			profileDataJSON, _ := json.Marshal(profileData)
-			
+
 			usersService := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				assertString(t, r.URL.Path, "/users/123")
 				w.WriteHeader(http.StatusOK)
 				body, _ := io.ReadAll(r.Body)
 				defer r.Body.Close()
@@ -73,7 +74,7 @@ func TestGateway(t *testing.T) {
 				w.Write(body)
 			}))
 			defer usersService.Close()
-			
+
 			usersServiceURL, _ := url.Parse(usersService.URL)
 
 			s := AuthTestService{}
@@ -92,7 +93,6 @@ func TestGateway(t *testing.T) {
 		func(t *testing.T) {
 			userData := auth.UserModel{UID: "123", Username: "abc", Email: "abc@xyz.com"}
 			userDataJSON, _ := json.Marshal(userData)
-			
 			usersService := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 				assertString(t, r.URL.Path, "/users/123")
 				w.WriteHeader(http.StatusCreated)
@@ -108,9 +108,55 @@ func TestGateway(t *testing.T) {
 			req.Header.Set("Authorization", "abc")
 
 			gateway.ServeHTTP(w, req)
-			
 			assertString(t, w.Body.String(), string(userDataJSON))
 		})
+
+	t.Run("Receive a request to create a new admin, the one making the request is an admin", func(t *testing.T) {
+		usersService := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			if r.Method == http.MethodGet {
+				assertString(t, r.URL.Path, "/admin/123")
+			}
+			w.WriteHeader(http.StatusOK)
+		}))
+		defer usersService.Close()
+
+		usersServiceURL, _ := url.Parse(usersService.URL)
+		s := AuthTestService{}
+		gateway := New(Admin(usersServiceURL, s))
+
+		signUpData := auth.SignUpModel{
+			Email: "abc@xyz.com", Username: "abc", Password: "123",
+		}
+		signUpDataJSON, _ := json.Marshal(signUpData)
+		w := CreateTestResponseRecorder()
+		req, _ := http.NewRequest(http.MethodPost, "/admin", bytes.NewReader(signUpDataJSON))
+		req.Header.Set("Authorization", "abc")
+		gateway.ServeHTTP(w, req)
+	})
+
+	t.Run("Receive a request to create a new admin, the one making the request isn't an admin, returns Unauthorized", func(t *testing.T) {
+		usersService := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			if r.Method == http.MethodGet {
+				assertString(t, r.URL.Path, "/admin/123")
+			}
+			w.WriteHeader(http.StatusNotFound)
+		}))
+		defer usersService.Close()
+
+		usersServiceURL, _ := url.Parse(usersService.URL)
+		s := AuthTestService{}
+		gateway := New(Admin(usersServiceURL, s))
+
+		signUpData := auth.SignUpModel{
+			Email: "abc@xyz.com", Username: "abc", Password: "123",
+		}
+		signUpDataJSON, _ := json.Marshal(signUpData)
+		w := CreateTestResponseRecorder()
+		req, _ := http.NewRequest(http.MethodPost, "/admin", bytes.NewReader(signUpDataJSON))
+		req.Header.Set("Authorization", "abc")
+		gateway.ServeHTTP(w, req)
+		assertStatusCode(t, w.Code, http.StatusUnauthorized)
+	})
 }
 
 type AuthTestService struct{}

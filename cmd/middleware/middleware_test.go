@@ -38,7 +38,7 @@ func TestAuthorize(t *testing.T) {
 		req.Header.Set("Authorization", "abc")
 		c.Request = req
 
-		Authorize(s)(c)
+		AuthorizeUser(s)(c)
 
 		anyUID, found := c.Get("User-UID")
 		if !found {
@@ -56,12 +56,12 @@ func TestAuthorize(t *testing.T) {
 		req, _ := http.NewRequest(http.MethodGet, "/test", nil)
 		req.Header.Set("Authorization", "xyz")
 		c.Request = req
-		Authorize(s)(c)
+		AuthorizeUser(s)(c)
 
 		c.Writer.WriteHeaderNow()
 		got := w.Result().StatusCode
 		assertInt(t, got, http.StatusUnauthorized)
-		
+
 		_, found := c.Get("User-UID")
 		if found {
 			t.Errorf("Key %s was found", "User-UID")
@@ -145,6 +145,7 @@ func TestReverseProxy(t *testing.T) {
 }
 
 func TestCreateUser(t *testing.T) {
+	gin.SetMode(gin.TestMode)
 	t.Run("Send valid sign up data, create an user and put the user data in the request body", func(t *testing.T) {
 		w := CreateTestResponseRecorder()
 		c, _ := gin.CreateTestContext(w)
@@ -207,6 +208,76 @@ func TestCreateUser(t *testing.T) {
 		c.Writer.WriteHeaderNow()
 		got := w.Result().StatusCode
 		assertInt(t, got, http.StatusBadRequest)
+	})
+}
+
+func TestAuthorizeAdmin(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	t.Run("Authenticate a request from the admin", func(t *testing.T) {
+		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			assertString(t, r.URL.String(), "/admin/xyz")
+			w.WriteHeader(http.StatusOK)
+		}))
+		defer server.Close()
+
+		url, _ := url.Parse(server.URL)
+		w := CreateTestResponseRecorder()
+		c, r := gin.CreateTestContext(w)
+		c.Set(uidKey, "xyz")
+		req, _ := http.NewRequest(http.MethodPost, "/test", nil)
+		c.Request = req
+
+		AuthorizeAdmin(url)(c)
+
+		r.ServeHTTP(w, req)
+
+		if c.IsAborted() {
+			t.Error("The middleware shouldn't abort")
+		}
+	})
+
+	t.Run("Authenticate a request from the admin, UID was not set, middleware aborts", func(t *testing.T) {
+		w := CreateTestResponseRecorder()
+		c, r := gin.CreateTestContext(w)
+		req, _ := http.NewRequest(http.MethodPost, "/test", nil)
+		c.Request = req
+
+		AuthorizeAdmin(&url.URL{})(c)
+
+		r.ServeHTTP(w, req)
+
+		if !c.IsAborted() {
+			t.Error("The middleware should abort")
+		}
+		c.Writer.WriteHeaderNow()
+		got := w.Result().StatusCode
+		assertInt(t, got, http.StatusInternalServerError)
+	})
+
+	t.Run("Authenticate a request from the admin, UID was set, but wasn't valid", func(t *testing.T) {
+		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			assertString(t, r.URL.String(), "/admin/xyz")
+			w.WriteHeader(http.StatusUnauthorized)
+		}))
+		defer server.Close()
+
+		url, _ := url.Parse(server.URL)
+		w := CreateTestResponseRecorder()
+		c, r := gin.CreateTestContext(w)
+		c.Set(uidKey, "xyz")
+		req, _ := http.NewRequest(http.MethodPost, "/test", nil)
+		c.Request = req
+
+		AuthorizeAdmin(url)(c)
+
+		r.ServeHTTP(w, req)
+
+		if !c.IsAborted() {
+			t.Error("The middleware should abort")
+		}
+
+		got := w.Code
+		assertInt(t, got, http.StatusUnauthorized)
 	})
 }
 

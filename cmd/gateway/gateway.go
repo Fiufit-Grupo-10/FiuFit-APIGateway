@@ -38,12 +38,18 @@ func New(configs ...RouterConfig) *Gateway {
 func Users(url *url.URL, auth auth.Service) RouterConfig {
 	return func(router *gin.Engine) {
 		router.POST("/users", middleware.CreateUser(auth), middleware.ReverseProxy(url))
-		router.GET("/users", middleware.Authorize(auth), middleware.AddUIDToRequestURL(), middleware.ReverseProxy(url))
+		router.GET("/users", middleware.AuthorizeUser(auth), middleware.AddUIDToRequestURL(), middleware.ReverseProxy(url))
 	}
 }
 
 func Profiles(url *url.URL, auth auth.Service) RouterConfig {
 	return func(router *gin.Engine) {
-		router.PUT("/users", middleware.Authorize(auth), middleware.AddUIDToRequestURL(), middleware.ReverseProxy(url))
+		router.PUT("/users", middleware.AuthorizeUser(auth), middleware.AddUIDToRequestURL(), middleware.ReverseProxy(url))
+	}
+}
+
+func Admin(url *url.URL, auth auth.Service) RouterConfig {
+	return func(router *gin.Engine) {
+		router.POST("/admin", middleware.AuthorizeUser(auth), middleware.AuthorizeAdmin(url), middleware.CreateUser(auth), middleware.ReverseProxy(url))
 	}
 }
