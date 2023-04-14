@@ -15,7 +15,7 @@ import (
 const uidKey string = "User-UID"
 
 func ReverseProxy(url *url.URL) gin.HandlerFunc {
-	return func (c *gin.Context) {
+	return func(c *gin.Context) {
 		proxy := httputil.NewSingleHostReverseProxy(url)
 		c.Request.Host = url.Host
 		proxy.ServeHTTP(c.Writer, c.Request)
@@ -42,7 +42,7 @@ func AuthorizeAdmin(url *url.URL) gin.HandlerFunc {
 			c.AbortWithStatus(http.StatusInternalServerError)
 			return
 		}
-		url.Path = path.Join(url.Path, "admin", UID)
+		url.Path = path.Join(url.Path, "admins", UID)
 		resultChannel := make(chan bool)
 		go func(rawURL string) {
 			response, err := http.Get(rawURL)

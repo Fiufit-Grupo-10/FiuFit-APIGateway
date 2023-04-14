@@ -47,5 +47,8 @@ func Users(url *url.URL, auth auth.Service) RouterConfig {
 func Admin(url *url.URL, auth auth.Service) RouterConfig {
 	return func(router *gin.Engine) {
 		router.POST("/admins", middleware.AuthorizeUser(auth), middleware.AuthorizeAdmin(url), middleware.CreateUser(auth), middleware.ReverseProxy(url))
+		router.OPTIONS("/admins", func(c *gin.Context) {
+			c.Header("Allow", "OPTIONS, POST")
+		})
 	}
 }
