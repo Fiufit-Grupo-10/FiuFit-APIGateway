@@ -50,7 +50,7 @@ func Users(url *url.URL, auth auth.Service) RouterConfig {
 func Admin(url *url.URL, auth auth.Service) RouterConfig {
 	return func(router *gin.Engine) {
 		proxy := middleware.ReverseProxy(url)
-		router.POST("/admins", middleware.AuthorizeUser(auth), middleware.AuthorizeAdmin(url), middleware.CreateUser(auth), proxy)
+		router.POST("/admins", middleware.AuthorizeUser(auth), middleware.AuthorizeAdmin(url), middleware.CreateAdmin(auth), proxy)
 		router.GET("/admins/users", middleware.AuthorizeUser(auth), middleware.AuthorizeAdmin(url), middleware.RemovePathFromRequestURL("/admins"), proxy)
 	}
 }

@@ -73,8 +73,6 @@ func AddUIDToRequestURL() gin.HandlerFunc {
 		}
 		// Set the endpoint to request in the users service
 		c.Request.URL.Path = path.Join(c.Request.URL.Path, UID)
-		// TODO: Remove
-		c.Request.Header.Set("Content-Type", "application/json")
 	}
 }
 
@@ -122,7 +120,39 @@ func CreateUser(s auth.Service) gin.HandlerFunc {
 			c.AbortWithStatus(http.StatusInternalServerError)
 			return
 		}
-		req.Header.Set("Content-Type", "application/json")
+		c.Request = req
+	}
+}
+
+//TODO: Duplicate code with CreateUser
+func CreateAdmin(s auth.Service) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		var signUpData auth.SignUpModel
+		// FIX: Doesn't check that all fields are present
+		err := c.ShouldBindJSON(&signUpData)
+		if err != nil {
+			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+
+		userData, err := s.CreateUser(signUpData)
+		if err != nil {
+			c.AbortWithStatusJSON(http.StatusConflict, gin.H{"error": err.Error()})
+			return
+		}
+
+		// Should never fail unless the userData
+		// representation becomes an unsupported type
+		userDataJSON, err := json.Marshal(userData)
+		if err != nil {
+			c.AbortWithStatus(http.StatusInternalServerError)
+			return
+		}
+		req, err := http.NewRequest(http.MethodPost, "/admins", bytes.NewBuffer(userDataJSON))
+		if err != nil {
+			c.AbortWithStatus(http.StatusInternalServerError)
+			return
+		}
 		c.Request = req
 	}
 }
