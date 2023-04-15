@@ -30,7 +30,7 @@ func New(configs ...RouterConfig) *Gateway {
 	router := gin.Default()
 
 	router.Use(middleware.Cors())
-	
+
 	for _, option := range configs {
 		option(router)
 	}
@@ -49,10 +49,10 @@ func Users(url *url.URL, auth auth.Service) RouterConfig {
 
 func Admin(url *url.URL, auth auth.Service) RouterConfig {
 	return func(router *gin.Engine) {
-		router.Group("/admins")
+		admins := router.Group("/admins")
 		{
-			router.POST("/", middleware.AuthorizeUser(auth), middleware.AuthorizeAdmin(url), middleware.CreateUser(auth), middleware.ReverseProxy(url))
-			router.GET("/users", middleware.AuthorizeUser(auth), middleware.AuthorizeAdmin(url))
+			admins.POST("/", middleware.AuthorizeUser(auth), middleware.AuthorizeAdmin(url), middleware.CreateUser(auth), middleware.ReverseProxy(url))
+			admins.GET("/users", middleware.AuthorizeUser(auth), middleware.AuthorizeAdmin(url))
 		}
 	}
 }
