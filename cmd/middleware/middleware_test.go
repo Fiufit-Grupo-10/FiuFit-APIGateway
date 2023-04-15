@@ -215,7 +215,7 @@ func TestAuthorizeAdmin(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 	t.Run("Authenticate a request from the admin", func(t *testing.T) {
 		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			assertString(t, r.URL.String(), "/admin/xyz")
+			assertString(t, r.URL.String(), "/admins/xyz")
 			w.WriteHeader(http.StatusOK)
 		}))
 		defer server.Close()
@@ -256,7 +256,7 @@ func TestAuthorizeAdmin(t *testing.T) {
 
 	t.Run("Authenticate a request from the admin, UID was set, but wasn't valid", func(t *testing.T) {
 		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			assertString(t, r.URL.String(), "/admin/xyz")
+			assertString(t, r.URL.String(), "/admins/xyz")
 			w.WriteHeader(http.StatusUnauthorized)
 		}))
 		defer server.Close()
@@ -278,6 +278,46 @@ func TestAuthorizeAdmin(t *testing.T) {
 
 		got := w.Code
 		assertInt(t, got, http.StatusUnauthorized)
+	})
+}
+
+func TestCORS(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	t.Run("The middleware should always set Access-Control-Allow-Origin and Credentials headers in the response", func(t *testing.T) {
+		for _, method := range []string{http.MethodGet, http.MethodPut, http.MethodPost, http.MethodDelete, http.MethodOptions} {
+			w := CreateTestResponseRecorder()
+			c, _ := gin.CreateTestContext(w)
+			req, _ := http.NewRequest(method, "/test", nil)
+			req.Header.Set("Origin", "http://foo.bar")
+			c.Request = req
+			Cors()(c)
+			c.Writer.WriteHeaderNow()
+			assertInt(t, w.Result().StatusCode, http.StatusOK)
+			responseAllowOriginHeader := w.Result().Header.Get("Access-Control-Allow-Origin")
+			responseAllowCredentialsHeader := w.Result().Header.Get("Access-Control-Allow-Credentials")
+
+			assertString(t, responseAllowOriginHeader, "http://foo.bar")
+			assertString(t, responseAllowCredentialsHeader, "true")
+		}
+	})
+	t.Run("The middleware should alsoset Access-Control-Allow-Headers and Methods headers in the response for the OPTIONS methods", func(t *testing.T) {
+		w := CreateTestResponseRecorder()
+		c, _ := gin.CreateTestContext(w)
+		req, _ := http.NewRequest(http.MethodOptions, "/test", nil)
+		req.Header.Set("Origin", "http://foo.bar")
+		c.Request = req
+		Cors()(c)
+		c.Writer.WriteHeaderNow()
+		assertInt(t, w.Result().StatusCode, http.StatusOK)
+		responseAllowOriginHeader := w.Result().Header.Get("Access-Control-Allow-Origin")
+		responseAllowCredentialsHeader := w.Result().Header.Get("Access-Control-Allow-Credentials")
+		responseAllowHeadersHeader := w.Result().Header.Get("Access-Control-Allow-Headers")
+		responseAllowMethodsHeader := w.Result().Header.Get("Access-Control-Allow-Methods")
+
+		assertString(t, responseAllowOriginHeader, "http://foo.bar")
+		assertString(t, responseAllowCredentialsHeader, "true")
+		assertString(t, responseAllowHeadersHeader, allowedHeaders)
+		assertString(t, responseAllowMethodsHeader, allowedMethods)
 	})
 }
 

@@ -13,6 +13,8 @@ import (
 )
 
 const uidKey string = "User-UID"
+const allowedHeaders string = "Authorization, Content-Type, Content-Length"
+const allowedMethods string = "POST, GET, PUT, DELETE, OPTIONS"
 
 func ReverseProxy(url *url.URL) gin.HandlerFunc {
 	return func(c *gin.Context) {
@@ -131,8 +133,8 @@ func Cors() gin.HandlerFunc{
 		c.Header("Access-Control-Allow-Origin", origin)
 		c.Header("Access-Control-Allow-Credentials", "true")
 		if c.Request.Method == http.MethodOptions {
-			c.Header("Access-Control-Allow-Headers", "Authorization, Content-Type, Content-Length")
-			c.Header("Access-Control-Allow-Methods", "POST, GET, PUT, DELETE, OPTIONS")
+			c.Header("Access-Control-Allow-Headers", allowedHeaders)
+			c.Header("Access-Control-Allow-Methods", allowedMethods)
 		}
 		c.Status(http.StatusOK)
 	}
