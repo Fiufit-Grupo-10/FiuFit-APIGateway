@@ -5,9 +5,6 @@ on:
 
 jobs:
   
-  
-  
-  
   Docker-Hub-Deploy:
     runs-on: ubuntu-latest
         
@@ -36,6 +33,6 @@ jobs:
         uses: docker/build-push-action@v2
         with:
           context: .
-          platforms: linux/amd64,linux/arm64
+          platforms: linux/arm64
           push: true
           tags: ${{ secrets.DOCKER_USERNAME }}/fiufit-api-gateway:latest
