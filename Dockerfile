@@ -11,7 +11,7 @@ COPY internal/ ./internal/
 COPY scripts/ ./scripts/
 
 ARG FIREBASE
-RUN echo ${FIREBASE} > firebase.json
+RUN echo ${FIREBASE} >> firebase.json
 
 COPY firebase.json .
 
