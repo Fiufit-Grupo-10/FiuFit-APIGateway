@@ -12,10 +12,10 @@ jobs:
     
       - uses: actions/checkout@v3
     
-#      - name: Create firebase token file      
+      - name: Create firebase token file      
         env:
           FIREBASE: ${{ secrets.FIREBASE }}
-#        run: echo "${FIREBASE}" > firebase.json
+        run: echo "${FIREBASE}" > firebase.json
    
     
       - name: Login to Docker Hub
