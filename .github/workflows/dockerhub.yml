@@ -4,20 +4,23 @@ on:
   workflow_dispatch:
 
 jobs:
+  
+  
+  
+  
   Docker-Hub-Deploy:
     runs-on: ubuntu-latest
-    
-    env:
-      FIREBASE: ${{secrets.FIREBASE}}
-      
+        
     steps:
+    
       - uses: actions/checkout@v3
-      
-      - name: Create firebase access file
-        run: |
-          touch firebase.json
-          echo ${{ secrets.FIREBASE }} > firebase.json
-          
+    
+      - name: Create firebase token file      
+        env:
+          FIREBASE: ${{ secrets.FIREBASE }}
+        run: echo "${FIREBASE}" > firebase.json
+   
+    
       - name: Login to Docker Hub
         uses: docker/login-action@v1
         with:
