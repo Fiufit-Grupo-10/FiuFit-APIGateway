@@ -42,7 +42,8 @@ func AuthorizeAdmin(url *url.URL) gin.HandlerFunc {
 			c.AbortWithStatus(http.StatusInternalServerError)
 			return
 		}
-		url.Path = path.Join(url.Path, "admins", UID)
+		adminURL := *url
+		adminURL.Path = path.Join(adminURL.Path, "admins", UID)
 		resultChannel := make(chan bool)
 		go func(rawURL string) {
 			response, err := http.Get(rawURL)
@@ -51,7 +52,7 @@ func AuthorizeAdmin(url *url.URL) gin.HandlerFunc {
 				return
 			}
 			resultChannel <- true
-		}(url.String())
+		}(adminURL.String())
 
 		ok = <-resultChannel
 		if !ok {
@@ -120,5 +121,19 @@ func CreateUser(s auth.Service) gin.HandlerFunc {
 		}
 		req.Header.Set("Content-Type", "application/json")
 		c.Request = req
+	}
+}
+
+//TODO: TEST
+func Cors() gin.HandlerFunc{
+	return func(c *gin.Context) {
+		origin := c.Request.Header.Get("Origin")
+		c.Header("Access-Control-Allow-Origin", origin)
+		c.Header("Access-Control-Allow-Credentials", "true")
+		if c.Request.Method == http.MethodOptions {
+			c.Header("Access-Control-Allow-Headers", "Authorization, Content-Type, Content-Length")
+			c.Header("Access-Control-Allow-Methods", "POST, GET, PUT, DELETE, OPTIONS")
+		}
+		c.Status(http.StatusOK)
 	}
 }
