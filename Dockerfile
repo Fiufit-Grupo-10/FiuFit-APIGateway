@@ -11,8 +11,6 @@ COPY internal/ ./internal/
 COPY scripts/ ./scripts/
 COPY firebase.json .
 
-RUN echo "${{ secrets.FIREBASE }}" > firebase.json
-
 RUN go build -o main ./cmd/main.go
 
 ARG USERS_URL
