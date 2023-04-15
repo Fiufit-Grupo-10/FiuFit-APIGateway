@@ -321,6 +321,49 @@ func TestCORS(t *testing.T) {
 	})
 }
 
+func TestRemovePathFromRequestURL(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	t.Run("Given the path /test the request URL path /test/user, after the middleware must be /users", func(t *testing.T) {
+		w := CreateTestResponseRecorder()
+		c, _ := gin.CreateTestContext(w)
+		req, _ := http.NewRequest(http.MethodOptions, "/test/users", nil)
+		c.Request = req
+		path := "/test"
+		RemovePathFromRequestURL(path)(c)
+		assertString(t, c.Request.URL.Path, "/users")
+	})
+
+	t.Run("Given the path /test the request URL path /test, after the middleware must be the same", func(t *testing.T) {
+		w := CreateTestResponseRecorder()
+		c, _ := gin.CreateTestContext(w)
+		req, _ := http.NewRequest(http.MethodOptions, "/test", nil)
+		c.Request = req
+		path := "/test"
+		RemovePathFromRequestURL(path)(c)
+		assertString(t, c.Request.URL.Path, "/test")
+	})
+
+	t.Run("Given the path 'test', the request URL path /test/users  after the middleware must be /users", func(t *testing.T) {
+		w := CreateTestResponseRecorder()
+		c, _ := gin.CreateTestContext(w)
+		req, _ := http.NewRequest(http.MethodOptions, "/test/users", nil)
+		c.Request = req
+		path := "test"
+		RemovePathFromRequestURL(path)(c)
+		assertString(t, c.Request.URL.Path, "/users")
+	})
+	
+	t.Run("Given the path '/test', the request URL path /users  after the middleware must be /users", func(t *testing.T) {
+		w := CreateTestResponseRecorder()
+		c, _ := gin.CreateTestContext(w)
+		req, _ := http.NewRequest(http.MethodOptions, "/users", nil)
+		c.Request = req
+		path := "/test"
+		RemovePathFromRequestURL(path)(c)
+		assertString(t, c.Request.URL.Path, "/users")
+	})
+}
+
 // The types below are necessary for tests to run Gin requires that
 // the recorder implements the CloseNotify interface. So we generated
 // a wrapper that implements it.

@@ -7,6 +7,7 @@ import (
 	"net/http/httputil"
 	"net/url"
 	"path"
+	"strings"
 
 	"fiufit.api.gateway/internal/auth"
 	"github.com/gin-gonic/gin"
@@ -127,7 +128,7 @@ func CreateUser(s auth.Service) gin.HandlerFunc {
 }
 
 //TODO: TEST
-func Cors() gin.HandlerFunc{
+func Cors() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		origin := c.Request.Header.Get("Origin")
 		c.Header("Access-Control-Allow-Origin", origin)
@@ -137,5 +138,22 @@ func Cors() gin.HandlerFunc{
 			c.Header("Access-Control-Allow-Methods", allowedMethods)
 		}
 		c.Status(http.StatusOK)
+	}
+}
+
+func RemovePathFromRequestURL(path string) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		url := *c.Request.URL
+		splitResult := strings.SplitAfter(url.Path, path)
+		if len(splitResult) < 2 {
+			return
+		}
+
+		if splitResult[1] == "" {
+			return
+		}
+
+		newURLPath := splitResult[1]
+		c.Request.URL.Path = newURLPath
 	}
 }
