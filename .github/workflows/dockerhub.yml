@@ -14,7 +14,7 @@ jobs:
     
       - name: Create firebase token file      
         run: |
-          echo "${FIREBASE}" &gt;&gt firebase.json
+          echo "${FIREBASE}" >> firebase.json
         shell: bash
         env:
           FIREBASE: ${{ secrets.FIREBASE }}
