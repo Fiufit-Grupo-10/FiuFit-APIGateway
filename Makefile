@@ -9,9 +9,9 @@ race-condition-tests:
 	go test -v -race ./...
 
 docker-tests:
-	docker-compose build
-	docker-compose run --rm unit-tests
-	docker-compose down
+	docker-compose -f docker-compose.dev.yml build
+	docker-compose -f docker-compose.dev.yml run --rm unit-tests
+	docker-compose -f docker-compose.dev.yml down
 
 build: app
 
@@ -25,7 +25,7 @@ tidy:
 	go mod tidy -v
 
 down:
-	docker-compose down
+	docker-compose -f docker-compose.dev.yml down
 
 air:
 	./scripts/air_dev.sh
