@@ -1,0 +1,7 @@
+version: '3'
+services:
+  myservice:
+    image: taller2avengers/fiufit-api-gateway:latest
+    ports:
+      - "8080:8080"
+        
