@@ -1,10 +1,9 @@
 version: "3.8"
+
 services:
   web-dev:
-    build:
-      context: .
-      dockerfile: Dockerfile
-      args:
-        - USERS_URL=$USERS_URL
+    image: taller2avengers/fiufit-api-gateway:latest
+    environment:
+      - USERS_URL=$USERS_URL
     ports:
       - "8080:8080"
