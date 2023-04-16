@@ -1,0 +1,11 @@
+name: fiufit-gateway
+services:
+  web:
+    image: taller2avengers/fiufit-api-gatewat:latest
+    ports:
+      - 8080:80
+    enviroment:
+      - NODE_ENV=production
+    labels:
+      okteto:
+      app: fiufit-gateway
