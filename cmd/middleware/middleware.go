@@ -157,7 +157,6 @@ func CreateAdmin(s auth.Service) gin.HandlerFunc {
 	}
 }
 
-//TODO: TEST
 func Cors() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		origin := c.Request.Header.Get("Origin")

@@ -197,7 +197,12 @@ func TestCreateUser(t *testing.T) {
 		c, _ := gin.CreateTestContext(w)
 
 		s := &AuthTestService{}
-		req, _ := http.NewRequest(http.MethodGet, "/test", nil)
+		signUpData := auth.SignUpModel{
+			Email: "abc@xyz.com", Username: "abc", Password: "1",
+		}
+		signUpDataJSON, _ := json.Marshal(signUpData)
+		bodyBytes := bytes.NewReader(signUpDataJSON)
+		req, _ := http.NewRequest(http.MethodGet, "/test", bodyBytes)
 		c.Request = req
 		CreateUser(s)(c)
 
@@ -207,7 +212,7 @@ func TestCreateUser(t *testing.T) {
 
 		c.Writer.WriteHeaderNow()
 		got := w.Result().StatusCode
-		assertInt(t, got, http.StatusBadRequest)
+		assertInt(t, got, http.StatusConflict)
 	})
 }
 
@@ -352,7 +357,7 @@ func TestRemovePathFromRequestURL(t *testing.T) {
 		RemovePathFromRequestURL(path)(c)
 		assertString(t, c.Request.URL.Path, "/users")
 	})
-	
+
 	t.Run("Given the path '/test', the request URL path /users  after the middleware must be /users", func(t *testing.T) {
 		w := CreateTestResponseRecorder()
 		c, _ := gin.CreateTestContext(w)
