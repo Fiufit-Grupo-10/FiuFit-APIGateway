@@ -1,0 +1,40 @@
+name: Preview deployment
+
+on:
+  workflow_run:
+    workflows: ["Run Tests"]
+    branches: [main]
+    types: 
+      - completed
+    
+  workflow_dispatch:
+  
+jobs:
+  test:
+    runs-on: ubuntu-latest       
+    steps:
+     - name: checkout
+       uses: actions/checkout@master
+     - name: Context
+       uses: okteto/context@latest
+       with:
+         token: ${{ secrets.OKTETO_TOKEN }}
+
+     - name: Create namespace
+       uses: okteto/create-namespace@latest
+       with:
+         namespace: pr-${{ github.event.number }}-franco-jyq
+   
+     - name: Deploy preview environment
+       uses: okteto/deploy-preview@latest
+       with:
+         name: pr-${{ github.event.number }}-franco-jyq
+       env:
+         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+     - name: checkout
+       uses: actions/checkout@master
+     - name: Context
+       uses: okteto/context@latest
+       with:
+         token: ${{ secrets.OKTETO_TOKEN }}
