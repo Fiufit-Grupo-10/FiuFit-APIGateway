@@ -7,6 +7,7 @@ import (
 	"io"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 
 	"net/url"
 	"testing"
@@ -156,6 +157,27 @@ func TestGateway(t *testing.T) {
 		req.Header.Set("Authorization", "abc")
 		gateway.ServeHTTP(w, req)
 		assertStatusCode(t, w.Code, http.StatusUnauthorized)
+	})
+
+	t.Run("An admin request all users profiles", func(t *testing.T) {
+		usersService := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			if r.Method == http.MethodGet && strings.HasPrefix(r.URL.Path, "/admins") {
+				assertString(t, r.URL.Path, "/admins/123")
+			} else {
+				assertString(t, r.URL.Path, "/users")
+			}
+			w.WriteHeader(http.StatusOK)
+		}))
+		defer usersService.Close()
+
+		usersServiceURL, _ := url.Parse(usersService.URL)
+		s := AuthTestService{}
+		gateway := New(Admin(usersServiceURL, s))
+
+		w := CreateTestResponseRecorder()
+		req, _ := http.NewRequest(http.MethodGet, "/admins/users", nil)
+		req.Header.Set("Authorization", "abc")
+		gateway.ServeHTTP(w, req)
 	})
 }
 
