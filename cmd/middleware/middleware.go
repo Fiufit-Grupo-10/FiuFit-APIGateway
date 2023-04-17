@@ -92,6 +92,7 @@ func getUID(c *gin.Context) (string, bool) {
 
 // Returns the handler charged with creating an user. It takes the URL
 // of the users service and an auth Service as argument.
+// TODO: Delete user
 func CreateUser(s auth.Service) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var signUpData auth.SignUpModel
@@ -112,15 +113,20 @@ func CreateUser(s auth.Service) gin.HandlerFunc {
 		// representation becomes an unsupported type
 		userDataJSON, err := json.Marshal(userData)
 		if err != nil {
+			// Delete user from firebase
 			c.AbortWithStatus(http.StatusInternalServerError)
 			return
 		}
 		req, err := http.NewRequest(http.MethodPost, "/users", bytes.NewBuffer(userDataJSON))
 		if err != nil {
+			// delete user from firebase
 			c.AbortWithStatus(http.StatusInternalServerError)
 			return
 		}
 		c.Request = req
+
+		// C.next()
+		// delete user from firebase
 	}
 }
 
