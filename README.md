@@ -22,7 +22,7 @@ $ make docker-test
 ```
 
 ### Building
-The next command builds a native binary named main
+The next command builds a native binary named  main
 ```bash
 $ make build
 ```
