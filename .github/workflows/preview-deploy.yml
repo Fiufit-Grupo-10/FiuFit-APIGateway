@@ -28,7 +28,7 @@ jobs:
      - name: Deploy preview environment
        uses: okteto/deploy-preview@latest
        with:
-         name: gateway-deployment
+         name: gateway-deployment-franco-jyq
        env:
          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
