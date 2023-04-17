@@ -26,6 +26,6 @@ func main() {
 		log.Fatalf("Error parsing URL: %s", usersURL)
 	}
 
-	gateway := gateway.New(gateway.Users(usersURL, f), gateway.Admin(usersURL, f))
+	gateway := gateway.New(gateway.Users(usersURL, f), gateway.Admin(usersURL, f), gateway.Docs())
 	gateway.Run("0.0.0.0:8080")
 }

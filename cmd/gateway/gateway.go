@@ -1,11 +1,15 @@
 package gateway
 
 import (
-	"fiufit.api.gateway/cmd/middleware"
-	"fiufit.api.gateway/internal/auth"
-	"github.com/gin-gonic/gin"
 	"net/http"
 	"net/url"
+
+	"fiufit.api.gateway/cmd/middleware"
+	_ "fiufit.api.gateway/docs"
+	"fiufit.api.gateway/internal/auth"
+	"github.com/gin-gonic/gin"
+	"github.com/swaggo/files"
+	"github.com/swaggo/gin-swagger"
 )
 
 type RouterConfig func(*gin.Engine)
@@ -24,9 +28,9 @@ func (g *Gateway) Run(addr ...string) {
 
 func New(configs ...RouterConfig) *Gateway {
 	router := gin.Default()
-	// router.NoRoute(func(c *gin.Context) {
-	// 	c.JSON(http.StatusNotFound, gin.H{"code": "PAGE_NOT_FOUND", "message": "404 not found"})
-	// })
+	router.NoRoute(func(c *gin.Context) {
+		c.JSON(http.StatusNotFound, gin.H{"code": "PAGE_NOT_FOUND", "message": "404 not found"})
+	})
 	router.Use(middleware.Cors())
 	for _, option := range configs {
 		option(router)
@@ -47,5 +51,13 @@ func Admin(url *url.URL, s auth.Service) RouterConfig {
 	return func(router *gin.Engine) {
 		router.POST("/admins", CreateAdmin(url, s))
 		router.GET("/admins/users", GetAllUserProfiles(url, s))
+	}
+}
+
+func Docs() RouterConfig {
+	return func(router *gin.Engine) {
+		// It doesn't automatically redirect /docs to /docs/index.html
+		// see :https://github.com/swaggo/http-swagger/issues/44
+		router.GET("/docs/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 	}
 }

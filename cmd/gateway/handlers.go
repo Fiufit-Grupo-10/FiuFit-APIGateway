@@ -8,6 +8,34 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// CreateUser godoc
+// @Summary      Create an user
+// @Description  It first creates and verifies the new user with the authentication/authorization service. Then it forwards the necessary data to the backend. 
+// @Tags         accounts
+// @Accept       json
+// @Produce      json
+// @Success      200  {object}  
+// {
+//   "email": "user@mail.com",
+//   "username": "user",
+//   "birthday": "2000-12-21",
+//   "level": "amateur",
+//   "latitude": 1000,
+//   "longitude": 1000,
+//   "height": 180,
+//   "weight": 80,
+//   "gender": "M",
+//   "target": "loss fat",
+//   "trainingtypes": [
+//     "Cardio"
+//   ],
+//   "user_type": "athlete"
+// }
+// @Failure      400  {object}  httputil.HTTPError
+// @Failure      409  {object}  httputil.HTTPError
+// @Failure      422  {object}  httputil.HTTPError
+// @Failure      500  {object}  httputil.HTTPError
+// @Router       /users [post]
 func CreateUser(url *url.URL, s auth.Service) gin.HandlerFunc {
 	usersServiceURL := &*url
 	return func(ctx *gin.Context) {
