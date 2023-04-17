@@ -2,7 +2,7 @@ name: Preview deployment
 
 on:
   workflow_run:
-    workflows: ["Run Tests"]
+    workflows: ["Go"]
     branches: [main]
     types: 
       - completed
