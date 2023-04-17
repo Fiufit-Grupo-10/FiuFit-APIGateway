@@ -59,5 +59,5 @@ func Docs() RouterConfig {
 		// It doesn't automatically redirect /docs to /docs/index.html
 		// see :https://github.com/swaggo/http-swagger/issues/44
 		router.GET("/docs/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
-	}
+  }
 }
