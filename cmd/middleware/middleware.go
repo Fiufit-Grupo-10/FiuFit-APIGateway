@@ -166,8 +166,9 @@ func Cors() gin.HandlerFunc {
 		if c.Request.Method == http.MethodOptions {
 			c.Header("Access-Control-Allow-Headers", allowedHeaders)
 			c.Header("Access-Control-Allow-Methods", allowedMethods)
+			c.AbortWithStatus(http.StatusOK)
+			return
 		}
-		c.Status(http.StatusOK)
 	}
 }
 

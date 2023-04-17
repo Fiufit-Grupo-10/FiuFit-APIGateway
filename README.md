@@ -1,33 +1,35 @@
 ![ci](https://github.com/Fiufit-Grupo-10/FiuFit-APIGateway/actions/workflows/ci.yml/badge.svg)
 [![codecov](https://codecov.io/gh/Fiufit-Grupo-10/FiuFit-APIGateway/branch/main/graph/badge.svg?token=CQMMLS2MR5)](https://codecov.io/gh/Fiufit-Grupo-10/FiuFit-APIGateway)
-# go-template
-Template for go services
+# Fiufit API Gateway
+API Gateway implementation for the Fiufit application. It acts as an
+intermediary between the frontend applications (Backoffice & Mobile)
+and the backend.
 
-### Ejecutar servidor en local
-
-```bash
-# Parado sobre la carpeta principal del proyecto
-docker-compose up
-```
-
-### Verificar que se haya levantado
+### Running dev enviroment
+The next command runs the application with live-reloading usign [cosmtrek/air](https://github.com/cosmtrek/air). 
+This makes the development process more intereactive
 
 ```bash
-# En una nueva terminal
-curl localhost:8080/ping
+$ make air
 ```
-
+To run tests,
 ```bash
-# Respuesta esperada
-{"message":"pong"}
+$ make tests
 ```
-
-### Para trabajar dentro del container corriendo
-
+Or if running inside a container is prefered
 ```bash
-# Ejecutar docker ps para obtener el ID del container y ejecutar
-
-docker exec -it <ID> bash
-
-# se deberia levantar un proceso con una terminal dentro del container, ya se pueden ejecutar tests.
+$ make docker-test
 ```
+
+### Building
+The next command builds a native binary named main
+```bash
+$ make build
+```
+Container version:
+```bash
+$ make build-docker
+```
+
+### License
+[LICENSE-MIT](https://opensource.org/license/mit/)

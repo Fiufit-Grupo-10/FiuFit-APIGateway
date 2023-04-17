@@ -1,24 +1,9 @@
 version: "3.8"
+
 services:
   web-dev:
-    build:
-      context: .
-      dockerfile: Dockerfile.dev
-      args:
-        - USERS_URL=$USERS_URL
+    image: taller2avengers/fiufit-api-gateway:latest
+    environment:
+      - USERS_URL=$USERS_URL
     ports:
       - "8080:8080"
-    volumes:
-      - ./:/app
-    command: air
-    
-  unit-tests:
-    build:
-      context: .
-      dockerfile: Dockerfile.dev
-    ports:
-      - 8080:8080
-    volumes:
-      - ./:/app
-    command: bash -c ./scripts/unit_tests.sh
-    

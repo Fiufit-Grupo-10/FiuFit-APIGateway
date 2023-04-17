@@ -18,5 +18,8 @@ ARG USERS_URL
 ENV USERS_URL ${USERS_URL}
 
 ENV GIN_MODE="release"
+
+EXPOSE 8080
+
 CMD ["./main"]
 

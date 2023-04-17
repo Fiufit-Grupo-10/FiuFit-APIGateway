@@ -8,10 +8,6 @@ import (
 	"net/url"
 )
 
-type AuthService interface {
-	CreateUser(data auth.SignUpModel) (auth.AuthorizedModel, error)
-}
-
 type RouterConfig func(*gin.Engine)
 
 type Gateway struct {
@@ -28,9 +24,10 @@ func (g *Gateway) Run(addr ...string) {
 
 func New(configs ...RouterConfig) *Gateway {
 	router := gin.Default()
-
+	// router.NoRoute(func(c *gin.Context) {
+	// 	c.JSON(http.StatusNotFound, gin.H{"code": "PAGE_NOT_FOUND", "message": "404 not found"})
+	// })
 	router.Use(middleware.Cors())
-
 	for _, option := range configs {
 		option(router)
 	}
