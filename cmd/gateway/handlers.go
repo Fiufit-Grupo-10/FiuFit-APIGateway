@@ -53,3 +53,10 @@ func GetAllUserProfiles(url *url.URL, s auth.Service) gin.HandlerFunc {
 		middleware.ReverseProxy(usersServiceURL)(ctx)
 	}
 }
+
+func GetTrainingTypes(url *url.URL) gin.HandlerFunc {
+	usersServiceURL := &*url
+	return func(ctx *gin.Context) {
+		middleware.ReverseProxy(usersServiceURL)(ctx)
+	}
+}
