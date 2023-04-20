@@ -24,6 +24,7 @@ func (g *Gateway) Run(addr ...string) {
 
 func New(configs ...RouterConfig) *Gateway {
 	router := gin.Default()
+	//TODO: Check that this line doesn't break the CORS middleware
 	// router.NoRoute(func(c *gin.Context) {
 	// 	c.JSON(http.StatusNotFound, gin.H{"code": "PAGE_NOT_FOUND", "message": "404 not found"})
 	// })
@@ -40,6 +41,7 @@ func Users(url *url.URL, s auth.Service) RouterConfig {
 		router.POST("/users", CreateUser(url, s))
 		router.GET("/users", GetAuthorizedUserProfile(url, s))
 		router.PUT("/users", UpdateUserProfile(url, s))
+		router.GET("/trainingtypes", GetTrainingTypes(url))
 	}
 }
 
