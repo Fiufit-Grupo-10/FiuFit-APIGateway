@@ -14,23 +14,16 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func assertString(t testing.TB, got, want string) {
+func assert_eq[T comparable](t testing.TB, got, want T) {
 	t.Helper()
 	if got != want {
-		t.Errorf("Got %s, want %s", got, want)
-	}
-}
-
-func assertInt(t testing.TB, got, want int) {
-	t.Helper()
-	if got != want {
-		t.Errorf("Got %d, want %d", got, want)
+		t.Errorf("Got %v, want %v", got, want)
 	}
 }
 
 func TestAuthorize(t *testing.T) {
 	gin.SetMode(gin.TestMode)
-	t.Run("Authorize request correctly, the next middlware can extract the UID", func(t *testing.T) {
+	t.Run("Authorize request correctly, the next middlware can extract the UID and verify that the user is authorized, Mustn't abort", func(t *testing.T) {
 		s := &AuthTestService{}
 		w := CreateTestResponseRecorder()
 		c, _ := gin.CreateTestContext(w)
@@ -43,13 +36,22 @@ func TestAuthorize(t *testing.T) {
 		anyUID, found := c.Get("User-UID")
 		if !found {
 			t.Errorf("Key %s wasn't found", "User-UID")
-		} else {
-			UID, _ := anyUID.(string)
-			assertString(t, UID, "123")
+			return
 		}
+		UID, _ := anyUID.(string)
+		assert_eq(t, UID, "123")
+
+		anyAuthorized, found := c.Get("Authorized")
+		if !found {
+			t.Errorf("Key %s wasn't found", "Authorized")
+		}
+		authorized, _ := anyAuthorized.(bool)
+		assert_eq(t, authorized, true)
+
+		assert_eq(t, c.IsAborted(), false)
 	})
 
-	t.Run("Authorization of request fails, the UID isn't set. The status of the response is Unauthorized", func(t *testing.T) {
+	t.Run("Authorization of request fails, the UID isn't set and the next middleware can verify that the user is unauthorized . Mustn't abort", func(t *testing.T) {
 		s := &AuthTestService{}
 		w := CreateTestResponseRecorder()
 		c, _ := gin.CreateTestContext(w)
@@ -58,14 +60,18 @@ func TestAuthorize(t *testing.T) {
 		c.Request = req
 		AuthorizeUser(s)(c)
 
-		c.Writer.WriteHeaderNow()
-		got := w.Result().StatusCode
-		assertInt(t, got, http.StatusUnauthorized)
-
 		_, found := c.Get("User-UID")
 		if found {
 			t.Errorf("Key %s was found", "User-UID")
 		}
+
+		anyAuthorized, found := c.Get("Authorized")
+		if !found {
+			t.Errorf("Key %s wasn't found", "Authorized")
+		}
+		authorized, _ := anyAuthorized.(bool)
+		assert_eq(t, authorized, false)
+		assert_eq(t, c.IsAborted(), false)
 	})
 }
 
@@ -82,7 +88,7 @@ func TestAddUIDToRequestURL(t *testing.T) {
 		AddUIDToRequestURL()(c)
 
 		path := c.Request.URL.String()
-		assertString(t, path, "http://www.example.com/xyz")
+		assert_eq(t, path, "http://www.example.com/xyz")
 	})
 
 	t.Run("Key not found so the middleware aborts with status Internal Server Error", func(t *testing.T) {
@@ -98,7 +104,7 @@ func TestAddUIDToRequestURL(t *testing.T) {
 		}
 		c.Writer.WriteHeaderNow()
 		got := w.Result().StatusCode
-		assertInt(t, got, http.StatusInternalServerError)
+		assert_eq(t, got, http.StatusInternalServerError)
 	})
 
 	t.Run("Key couldn't be cast to string so the middleware aborts with status Internal Server Error", func(t *testing.T) {
@@ -115,7 +121,7 @@ func TestAddUIDToRequestURL(t *testing.T) {
 		}
 		c.Writer.WriteHeaderNow()
 		got := w.Result().StatusCode
-		assertInt(t, got, http.StatusInternalServerError)
+		assert_eq(t, got, http.StatusInternalServerError)
 	})
 }
 
@@ -125,7 +131,7 @@ func TestReverseProxy(t *testing.T) {
 	// ReverseProxy is a wrapper over the std reverse proxy
 	t.Run("Redirect a request to another service", func(t *testing.T) {
 		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			assertString(t, r.URL.String(), "/test")
+			assert_eq(t, r.URL.String(), "/test")
 			w.WriteHeader(http.StatusOK)
 			w.Header().Set("Content-Type", "application/text")
 			w.Write([]byte("reverse-proxy"))
@@ -140,7 +146,7 @@ func TestReverseProxy(t *testing.T) {
 
 		r.ServeHTTP(w, req)
 
-		assertString(t, w.Body.String(), "reverse-proxy")
+		assert_eq(t, w.Body.String(), "reverse-proxy")
 	})
 }
 
@@ -163,14 +169,14 @@ func TestCreateUser(t *testing.T) {
 
 		CreateUser(s)(c)
 
-		assertInt(t, s.CreateUserCalls, 1)
+		assert_eq(t, s.CreateUserCalls, 1)
 		body, _ := io.ReadAll(c.Request.Body)
 		defer c.Request.Body.Close()
 
 		userData := auth.UserModel{UID: "123", Username: "abc", Email: "abc@xyz.com"}
 		userDataJSON, _ := json.Marshal(userData)
 
-		assertString(t, string(body), string(userDataJSON))
+		assert_eq(t, string(body), string(userDataJSON))
 	})
 
 	// TODO: Missing testing that the body contains some context of the error
@@ -189,7 +195,7 @@ func TestCreateUser(t *testing.T) {
 
 		c.Writer.WriteHeaderNow()
 		got := w.Result().StatusCode
-		assertInt(t, got, http.StatusBadRequest)
+		assert_eq(t, got, http.StatusBadRequest)
 	})
 	// TODO: Missing testing that the body contains some context of the error
 	t.Run("If the sign up data in the body is invalid the middleware aborts and sets the response status to Conflict", func(t *testing.T) {
@@ -212,7 +218,7 @@ func TestCreateUser(t *testing.T) {
 
 		c.Writer.WriteHeaderNow()
 		got := w.Result().StatusCode
-		assertInt(t, got, http.StatusConflict)
+		assert_eq(t, got, http.StatusConflict)
 	})
 }
 
@@ -220,7 +226,7 @@ func TestAuthorizeAdmin(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 	t.Run("Authenticate a request from the admin", func(t *testing.T) {
 		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			assertString(t, r.URL.String(), "/admins/xyz")
+			assert_eq(t, r.URL.String(), "/admins/xyz")
 			w.WriteHeader(http.StatusOK)
 		}))
 		defer server.Close()
@@ -256,12 +262,12 @@ func TestAuthorizeAdmin(t *testing.T) {
 		}
 		c.Writer.WriteHeaderNow()
 		got := w.Result().StatusCode
-		assertInt(t, got, http.StatusInternalServerError)
+		assert_eq(t, got, http.StatusInternalServerError)
 	})
 
 	t.Run("Authenticate a request from the admin, UID was set, but wasn't valid", func(t *testing.T) {
 		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			assertString(t, r.URL.String(), "/admins/xyz")
+			assert_eq(t, r.URL.String(), "/admins/xyz")
 			w.WriteHeader(http.StatusUnauthorized)
 		}))
 		defer server.Close()
@@ -282,7 +288,7 @@ func TestAuthorizeAdmin(t *testing.T) {
 		}
 
 		got := w.Code
-		assertInt(t, got, http.StatusUnauthorized)
+		assert_eq(t, got, http.StatusUnauthorized)
 	})
 }
 
@@ -297,12 +303,12 @@ func TestCORS(t *testing.T) {
 			c.Request = req
 			Cors()(c)
 			c.Writer.WriteHeaderNow()
-			assertInt(t, w.Result().StatusCode, http.StatusOK)
+			assert_eq(t, w.Result().StatusCode, http.StatusOK)
 			responseAllowOriginHeader := w.Result().Header.Get("Access-Control-Allow-Origin")
 			responseAllowCredentialsHeader := w.Result().Header.Get("Access-Control-Allow-Credentials")
 
-			assertString(t, responseAllowOriginHeader, "http://foo.bar")
-			assertString(t, responseAllowCredentialsHeader, "true")
+			assert_eq(t, responseAllowOriginHeader, "http://foo.bar")
+			assert_eq(t, responseAllowCredentialsHeader, "true")
 		}
 	})
 	t.Run("The middleware should alsoset Access-Control-Allow-Headers and Methods headers in the response for the OPTIONS methods", func(t *testing.T) {
@@ -313,16 +319,16 @@ func TestCORS(t *testing.T) {
 		c.Request = req
 		Cors()(c)
 		c.Writer.WriteHeaderNow()
-		assertInt(t, w.Result().StatusCode, http.StatusOK)
+		assert_eq(t, w.Result().StatusCode, http.StatusOK)
 		responseAllowOriginHeader := w.Result().Header.Get("Access-Control-Allow-Origin")
 		responseAllowCredentialsHeader := w.Result().Header.Get("Access-Control-Allow-Credentials")
 		responseAllowHeadersHeader := w.Result().Header.Get("Access-Control-Allow-Headers")
 		responseAllowMethodsHeader := w.Result().Header.Get("Access-Control-Allow-Methods")
 
-		assertString(t, responseAllowOriginHeader, "http://foo.bar")
-		assertString(t, responseAllowCredentialsHeader, "true")
-		assertString(t, responseAllowHeadersHeader, allowedHeaders)
-		assertString(t, responseAllowMethodsHeader, allowedMethods)
+		assert_eq(t, responseAllowOriginHeader, "http://foo.bar")
+		assert_eq(t, responseAllowCredentialsHeader, "true")
+		assert_eq(t, responseAllowHeadersHeader, allowedHeaders)
+		assert_eq(t, responseAllowMethodsHeader, allowedMethods)
 	})
 }
 
@@ -335,7 +341,7 @@ func TestRemovePathFromRequestURL(t *testing.T) {
 		c.Request = req
 		path := "/test"
 		RemovePathFromRequestURL(path)(c)
-		assertString(t, c.Request.URL.Path, "/users")
+		assert_eq(t, c.Request.URL.Path, "/users")
 	})
 
 	t.Run("Given the path /test the request URL path /test, after the middleware must be the same", func(t *testing.T) {
@@ -345,7 +351,7 @@ func TestRemovePathFromRequestURL(t *testing.T) {
 		c.Request = req
 		path := "/test"
 		RemovePathFromRequestURL(path)(c)
-		assertString(t, c.Request.URL.Path, "/test")
+		assert_eq(t, c.Request.URL.Path, "/test")
 	})
 
 	t.Run("Given the path 'test', the request URL path /test/users  after the middleware must be /users", func(t *testing.T) {
@@ -355,7 +361,7 @@ func TestRemovePathFromRequestURL(t *testing.T) {
 		c.Request = req
 		path := "test"
 		RemovePathFromRequestURL(path)(c)
-		assertString(t, c.Request.URL.Path, "/users")
+		assert_eq(t, c.Request.URL.Path, "/users")
 	})
 
 	t.Run("Given the path '/test', the request URL path /users  after the middleware must be /users", func(t *testing.T) {
@@ -365,7 +371,94 @@ func TestRemovePathFromRequestURL(t *testing.T) {
 		c.Request = req
 		path := "/test"
 		RemovePathFromRequestURL(path)(c)
-		assertString(t, c.Request.URL.Path, "/users")
+		assert_eq(t, c.Request.URL.Path, "/users")
+	})
+}
+
+func TestExecuteIf(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	t.Run("Execute the first middleware if the guard returns true", func(t *testing.T) {
+		w := CreateTestResponseRecorder()
+		c, _ := gin.CreateTestContext(w)
+		req, _ := http.NewRequest(http.MethodGet, "/test", nil)
+		c.Request = req
+
+		guard := func(c *gin.Context) bool {
+			return true
+		}
+
+		first := func(c *gin.Context) {
+			c.Set("key", "first")
+		}
+
+		second := func(c *gin.Context) {
+			c.Set("key", "second")
+		}
+
+		ExecuteIf(guard, first, second)(c)
+		anyKey, found := c.Get("key")
+		if !found {
+			t.Errorf("Key %s wasn't found", "key")
+			return
+		}
+		key, _ := anyKey.(string)
+		assert_eq(t, key, "first")
+
+	})
+
+	t.Run("Execute the second middleware if the guard returns false", func(t *testing.T) {
+		w := CreateTestResponseRecorder()
+		c, _ := gin.CreateTestContext(w)
+		req, _ := http.NewRequest(http.MethodGet, "/test", nil)
+		c.Request = req
+
+		guard := func(c *gin.Context) bool {
+			return false
+		}
+
+		first := func(c *gin.Context) {
+			c.Set("key", "first")
+		}
+
+		second := func(c *gin.Context) {
+			c.Set("key", "second")
+		}
+
+		ExecuteIf(guard, first, second)(c)
+		anyKey, found := c.Get("key")
+		if !found {
+			t.Errorf("Key %s wasn't found", "key")
+			return
+		}
+		key, _ := anyKey.(string)
+		assert_eq(t, key, "second")
+	})
+}
+
+func TestIsAuthorized(t *testing.T) {
+	t.Run("The key is set and the user is authorized, mustn't abort", func(t *testing.T) {
+		w := CreateTestResponseRecorder()
+		c, _ := gin.CreateTestContext(w)
+		c.Set(authorizedKey, true)
+		got := IsAuthorized(c)
+		assert_eq(t, got, true)
+		assert_eq(t, c.IsAborted(), false)
+	})
+
+	t.Run("The key is set and the user isn't authorized, mustn't abort", func(t *testing.T) {
+		w := CreateTestResponseRecorder()
+		c, _ := gin.CreateTestContext(w)
+		c.Set(authorizedKey, false)
+		got := IsAuthorized(c)
+		assert_eq(t, got, false)
+		assert_eq(t, c.IsAborted(), false)
+	})
+
+	t.Run("The key isnt set , must abort", func(t *testing.T) {
+		w := CreateTestResponseRecorder()
+		c, _ := gin.CreateTestContext(w)
+		IsAuthorized(c)
+		assert_eq(t, c.IsAborted(), true)
 	})
 }
 

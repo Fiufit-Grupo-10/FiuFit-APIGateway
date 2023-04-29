@@ -39,7 +39,7 @@ func New(configs ...RouterConfig) *Gateway {
 func Users(url *url.URL, s auth.Service) RouterConfig {
 	return func(router *gin.Engine) {
 		router.POST("/users", CreateUser(url, s))
-		router.GET("/users", GetAuthorizedUserProfile(url, s))
+		router.GET("/users", GetUserProfile(url, s))
 		router.PUT("/users", UpdateUserProfile(url, s))
 		router.GET("/trainingtypes", GetTrainingTypes(url))
 	}

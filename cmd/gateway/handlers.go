@@ -16,11 +16,11 @@ func CreateUser(url *url.URL, s auth.Service) gin.HandlerFunc {
 	}
 }
 
-func GetAuthorizedUserProfile(url *url.URL, s auth.Service) gin.HandlerFunc {
+func GetUserProfile(url *url.URL, s auth.Service) gin.HandlerFunc {
 	usersServiceURL := &*url
 	return func(ctx *gin.Context) {
 		middleware.AuthorizeUser(s)(ctx)
-		middleware.AddUIDToRequestURL()(ctx)
+		middleware.ExecuteIf(middleware.IsAuthorized, middleware.AddUIDToRequestURL(), func(c *gin.Context) {})(ctx)
 		middleware.ReverseProxy(usersServiceURL)(ctx)
 	}
 }

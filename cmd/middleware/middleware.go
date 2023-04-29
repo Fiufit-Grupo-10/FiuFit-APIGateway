@@ -14,8 +14,29 @@ import (
 )
 
 const uidKey string = "User-UID"
+const authorizedKey string = "Authorized"
 const allowedHeaders string = "Authorization, Content-Type, Content-Length"
 const allowedMethods string = "POST, GET, PUT, DELETE, OPTIONS"
+
+func ExecuteIf(guard func(*gin.Context) bool, a, b gin.HandlerFunc) gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		if guard(ctx) {
+			a(ctx)
+			return
+		}
+		b(ctx)
+	}
+}
+
+func IsAuthorized(ctx *gin.Context) bool {
+	authorized, found := getAuthorized(ctx)
+	// This shouldn't fail, unless it was called incorrectly
+	if !found {
+		ctx.AbortWithStatus(http.StatusInternalServerError)
+		return false
+	}
+	return authorized
+}
 
 func ReverseProxy(url *url.URL) gin.HandlerFunc {
 	return func(c *gin.Context) {
@@ -30,11 +51,12 @@ func AuthorizeUser(s auth.Service) gin.HandlerFunc {
 		token := c.Request.Header.Get("Authorization")
 		uid, err := s.VerifyToken(token)
 		if err != nil {
-			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
+			c.Set(authorizedKey, false)
 			return
 		}
 		// Magic value const
 		c.Set(uidKey, uid)
+		c.Set(authorizedKey, true)
 	}
 }
 
@@ -88,6 +110,20 @@ func getUID(c *gin.Context) (string, bool) {
 	}
 
 	return UID, true
+}
+
+func getAuthorized(c *gin.Context) (bool, bool) {
+	anyAuthorized, found := c.Get(authorizedKey)
+	if !found {
+		return false, found
+	}
+	authorized, ok := anyAuthorized.(bool)
+	// Should never fail, dev error
+	if !ok {
+		return false, ok
+	}
+
+	return authorized, true
 }
 
 // Returns the handler charged with creating an user. It takes the URL

@@ -90,7 +90,7 @@ func TestGateway(t *testing.T) {
 			assertStatusCode(t, w.Code, http.StatusOK)
 		})
 
-	t.Run("Request an user profile, being authorized, the response body must be a json containing the users profile data",
+	t.Run("Request an user profile, being authorized, the response body must be a json containing the users private profile data",
 		func(t *testing.T) {
 			userData := auth.UserModel{UID: "123", Username: "abc", Email: "abc@xyz.com"}
 			userDataJSON, _ := json.Marshal(userData)
@@ -107,6 +107,28 @@ func TestGateway(t *testing.T) {
 			w := CreateTestResponseRecorder()
 			req, _ := http.NewRequest(http.MethodGet, "/users", nil)
 			req.Header.Set("Authorization", "abc")
+
+			gateway.ServeHTTP(w, req)
+			assertString(t, w.Body.String(), string(userDataJSON))
+		})
+
+	t.Run("Request an user profile, being unauthorized, the response body must be a json containing the users public profile data",
+		func(t *testing.T) {
+			userData := auth.UserModel{UID: "123", Username: "abc", Email: "abc@xyz.com"}
+			userDataJSON, _ := json.Marshal(userData)
+			usersService := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				assertString(t, r.URL.Path, "/users")
+				w.WriteHeader(http.StatusCreated)
+				w.Write(userDataJSON)
+			}))
+			defer usersService.Close()
+
+			usersServiceURL, _ := url.Parse(usersService.URL)
+			s := AuthTestService{}
+			gateway := New(Users(usersServiceURL, s))
+			w := CreateTestResponseRecorder()
+			req, _ := http.NewRequest(http.MethodGet, "/users", nil)
+			req.Header.Set("Authorization", "xyz")
 
 			gateway.ServeHTTP(w, req)
 			assertString(t, w.Body.String(), string(userDataJSON))
