@@ -60,3 +60,31 @@ func GetTrainingTypes(url *url.URL) gin.HandlerFunc {
 		middleware.ReverseProxy(usersServiceURL)(ctx)
 	}
 }
+
+func CreateTrainingPlan(url *url.URL, s auth.Service) gin.HandlerFunc {
+	trainersServiceURL := &*url
+	return func(ctx *gin.Context) {
+		middleware.AuthorizeUser(s)(ctx)
+		// Verify that the user is indeed a trainer
+		middleware.ReverseProxy(trainersServiceURL)(ctx)
+	}
+}
+
+func ModifyTrainingPlan(url *url.URL, s auth.Service) gin.HandlerFunc {
+	trainersServiceURL := &*url
+	return func(ctx *gin.Context) {
+		middleware.AuthorizeUser(s)(ctx)
+		// Verify that the user is indeed a trainer
+		middleware.ReverseProxy(trainersServiceURL)(ctx)
+	}
+}
+
+func GetTrainerPlans(url *url.URL, s auth.Service) gin.HandlerFunc {
+	trainersServiceURL := &*url
+	return func(ctx *gin.Context) {
+		middleware.AuthorizeUser(s)(ctx)
+		// Verify that the user is indeed a trainer
+		middleware.AddUIDToRequestURL()(ctx)
+		middleware.ReverseProxy(trainersServiceURL)(ctx)
+	}
+}

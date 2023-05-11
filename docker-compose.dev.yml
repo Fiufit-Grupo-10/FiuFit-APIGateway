@@ -6,6 +6,7 @@ services:
       dockerfile: Dockerfile.dev
       args:
         - USERS_URL=$USERS_URL
+        - TRAINERS_URL=$TRAINERS_URL
     ports:
       - "8080:8080"
     volumes:
