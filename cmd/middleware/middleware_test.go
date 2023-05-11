@@ -75,6 +75,22 @@ func TestAuthorize(t *testing.T) {
 	})
 }
 
+func TestSetQuery(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	t.Run("Set query paramater", func(t *testing.T) {
+		w := CreateTestResponseRecorder()
+		c, _ := gin.CreateTestContext(w)
+		req, _ := http.NewRequest(http.MethodGet, "www.example.com/test?value=1", nil)
+		c.Request = req
+
+		SetQuery("test", "query")(c)
+		param := c.Query("test")
+
+		assert_eq(t, param, "query")
+		assert_eq(t, c.Query("value"), "1")
+	})
+}
+
 func TestAddUIDToRequestURL(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 	t.Run("Add UID to URL correctly", func(t *testing.T) {
@@ -436,6 +452,7 @@ func TestExecuteIf(t *testing.T) {
 }
 
 func TestIsAuthorized(t *testing.T) {
+	gin.SetMode(gin.TestMode)
 	t.Run("The key is set and the user is authorized, mustn't abort", func(t *testing.T) {
 		w := CreateTestResponseRecorder()
 		c, _ := gin.CreateTestContext(w)

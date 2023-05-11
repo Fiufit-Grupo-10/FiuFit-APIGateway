@@ -17,7 +17,7 @@ func main() {
 	}
 	rawURL, found := os.LookupEnv("USERS_URL")
 	log.Printf("rawURL: %s", rawURL)
-	if !found {
+	if !found && rawURL != "" {
 		log.Fatal("USERS_URL enviroment variable not found")
 	}
 

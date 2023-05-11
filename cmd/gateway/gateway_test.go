@@ -195,7 +195,6 @@ func TestGateway(t *testing.T) {
 		usersServiceURL, _ := url.Parse(usersService.URL)
 		s := AuthTestService{}
 		gateway := New(Admin(usersServiceURL, s))
-
 		w := CreateTestResponseRecorder()
 		req, _ := http.NewRequest(http.MethodGet, "/admins/users", nil)
 		req.Header.Set("Authorization", "abc")
