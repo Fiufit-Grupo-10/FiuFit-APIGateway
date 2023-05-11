@@ -5,5 +5,6 @@ services:
     image: taller2avengers/fiufit-api-gateway:latest
     environment:
       - USERS_URL=$USERS_URL
+      - TRAINERS_URL=$TRAINERS_URL
     ports:
       - "8080:8080"
