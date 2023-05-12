@@ -39,7 +39,7 @@ func New(configs ...RouterConfig) *Gateway {
 func Users(url *url.URL, s auth.Service) RouterConfig {
 	return func(router *gin.Engine) {
 		router.POST("/users", CreateUser(url, s))
-		router.GET("/users", GetUserProfile(url, s))
+		router.GET("/users", GetUsersProfiles(url, s))
 		router.PUT("/users", UpdateUserProfile(url, s))
 		router.GET("/trainingtypes", GetTrainingTypes(url))
 	}
@@ -48,7 +48,7 @@ func Users(url *url.URL, s auth.Service) RouterConfig {
 func Admin(url *url.URL, s auth.Service) RouterConfig {
 	return func(router *gin.Engine) {
 		router.POST("/admins", CreateAdmin(url, s))
-		router.GET("/admins/users", GetAllUserProfiles(url, s))
+		router.GET("/admins/users", GetUsersProfilesAdmin(url, s))
 	}
 }
 

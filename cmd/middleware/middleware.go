@@ -28,6 +28,14 @@ func ExecuteIf(guard func(*gin.Context) bool, a, b gin.HandlerFunc) gin.HandlerF
 	}
 }
 
+func SetQuery(key, value string) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		query := c.Request.URL.Query()
+		query.Add(key,value)
+		c.Request.URL.RawQuery = query.Encode()
+	}
+}
+
 func IsAuthorized(ctx *gin.Context) bool {
 	authorized, found := getAuthorized(ctx)
 	// This shouldn't fail, unless it was called incorrectly

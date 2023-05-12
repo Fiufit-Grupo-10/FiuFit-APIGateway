@@ -181,12 +181,15 @@ func TestGateway(t *testing.T) {
 		assertStatusCode(t, w.Code, http.StatusUnauthorized)
 	})
 
-	t.Run("An admin request all users profiles", func(t *testing.T) {
+	t.Run("An admin request all the profiles", func(t *testing.T) {
 		usersService := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			if r.Method == http.MethodGet && strings.HasPrefix(r.URL.Path, "/admins") {
+				/// Verify admin
 				assertString(t, r.URL.Path, "/admins/123")
 			} else {
+				// Gets profiles
 				assertString(t, r.URL.Path, "/users")
+				assertString(t, r.URL.Query().Get("admin"), "true")
 			}
 			w.WriteHeader(http.StatusOK)
 		}))
@@ -195,10 +198,26 @@ func TestGateway(t *testing.T) {
 		usersServiceURL, _ := url.Parse(usersService.URL)
 		s := AuthTestService{}
 		gateway := New(Admin(usersServiceURL, s))
-
 		w := CreateTestResponseRecorder()
 		req, _ := http.NewRequest(http.MethodGet, "/admins/users", nil)
 		req.Header.Set("Authorization", "abc")
+		gateway.ServeHTTP(w, req)
+	})
+
+	t.Run("An user request all the profiles", func(t *testing.T) {
+		usersService := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			assertString(t, r.URL.Path, "/users")
+			assertString(t, r.URL.Query().Get("admin"), "false")
+			w.WriteHeader(http.StatusOK)
+		}))
+		defer usersService.Close()
+
+		usersServiceURL, _ := url.Parse(usersService.URL)
+		s := AuthTestService{}
+		gateway := New(Users(usersServiceURL, s))
+		w := CreateTestResponseRecorder()
+		req, _ := http.NewRequest(http.MethodGet, "/users", nil)
+		req.Header.Set("Authorization", "xyz")
 		gateway.ServeHTTP(w, req)
 	})
 }

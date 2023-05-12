@@ -16,11 +16,11 @@ func CreateUser(url *url.URL, s auth.Service) gin.HandlerFunc {
 	}
 }
 
-func GetUserProfile(url *url.URL, s auth.Service) gin.HandlerFunc {
+func GetUsersProfiles(url *url.URL, s auth.Service) gin.HandlerFunc {
 	usersServiceURL := &*url
 	return func(ctx *gin.Context) {
 		middleware.AuthorizeUser(s)(ctx)
-		middleware.ExecuteIf(middleware.IsAuthorized, middleware.AddUIDToRequestURL(), func(c *gin.Context) {})(ctx)
+		middleware.ExecuteIf(middleware.IsAuthorized, middleware.AddUIDToRequestURL(), middleware.SetQuery("admin", "false"))(ctx)
 		middleware.ReverseProxy(usersServiceURL)(ctx)
 	}
 }
@@ -44,12 +44,13 @@ func CreateAdmin(url *url.URL, s auth.Service) gin.HandlerFunc {
 	}
 }
 
-func GetAllUserProfiles(url *url.URL, s auth.Service) gin.HandlerFunc {
+func GetUsersProfilesAdmin(url *url.URL, s auth.Service) gin.HandlerFunc {
 	usersServiceURL := &*url
 	return func(ctx *gin.Context) {
 		middleware.AuthorizeUser(s)(ctx)
 		middleware.AuthorizeAdmin(usersServiceURL)(ctx)
 		middleware.RemovePathFromRequestURL("/admins")(ctx)
+		middleware.SetQuery("admin", "true")(ctx)
 		middleware.ReverseProxy(usersServiceURL)(ctx)
 	}
 }
