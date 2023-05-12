@@ -48,6 +48,6 @@ func Users(url *url.URL, s auth.Service) RouterConfig {
 func Admin(url *url.URL, s auth.Service) RouterConfig {
 	return func(router *gin.Engine) {
 		router.POST("/admins", CreateAdmin(url, s))
-		router.GET("/admins/users", GetAllUserProfiles(url, s))
+		router.GET("/admins/users", GetUsersProfilesAdmin(url, s))
 	}
 }

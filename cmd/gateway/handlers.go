@@ -20,15 +20,11 @@ func GetUsersProfiles(url *url.URL, s auth.Service) gin.HandlerFunc {
 	usersServiceURL := &*url
 	return func(ctx *gin.Context) {
 		middleware.AuthorizeUser(s)(ctx)
-		middleware.ExecuteIf(middleware.IsAuthorized, func(c *gin.Context) {
-			middleware.SetQuery("public", "false")(c)
-			middleware.AddUIDToRequestURL()(c)
-		}, middleware.SetQuery("public", "true"))(ctx)
+		middleware.ExecuteIf(middleware.IsAuthorized, middleware.AddUIDToRequestURL(), middleware.SetQuery("admin", "false"))(ctx)
 		middleware.ReverseProxy(usersServiceURL)(ctx)
 	}
 }
 
-//GET /users/id
 func UpdateUserProfile(url *url.URL, s auth.Service) gin.HandlerFunc {
 	usersServiceURL := &*url
 	return func(ctx *gin.Context) {
@@ -48,13 +44,13 @@ func CreateAdmin(url *url.URL, s auth.Service) gin.HandlerFunc {
 	}
 }
 
-func GetAllUserProfiles(url *url.URL, s auth.Service) gin.HandlerFunc {
+func GetUsersProfilesAdmin(url *url.URL, s auth.Service) gin.HandlerFunc {
 	usersServiceURL := &*url
 	return func(ctx *gin.Context) {
 		middleware.AuthorizeUser(s)(ctx)
 		middleware.AuthorizeAdmin(usersServiceURL)(ctx)
 		middleware.RemovePathFromRequestURL("/admins")(ctx)
-		middleware.SetQuery("public", "false")
+		middleware.SetQuery("admin", "true")(ctx)
 		middleware.ReverseProxy(usersServiceURL)(ctx)
 	}
 }
