@@ -2,11 +2,11 @@ version: "3.8"
 services:
   gateway-svc:
     dockerfile: Dockerfile
-       args:
-         - USERS_URL=$USERS_URL
-         - TRAINERS_URL=$TRAINERS_URL
+     args:
+      - USERS_URL=$USERS_URL
+      - TRAINERS_URL=$TRAINERS_URL
      ports:
-       - "8080:8080"
+      - "8080:8080"
      volumes:
       - ./:/app
     environment:
