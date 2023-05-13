@@ -60,7 +60,8 @@ func AuthorizeUser(s auth.Service) gin.HandlerFunc {
 		token := c.Request.Header.Get("Authorization")
 		uid, err := s.VerifyToken(token)
 		if err != nil {
-			log.Println("Fallo en firebase")
+			log.Println(uid)
+			log.Printf("Fallo en firebase: %s", err.Error())
 			c.Set(authorizedKey, false)
 			return
 		}
