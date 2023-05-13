@@ -1,7 +1,7 @@
 version: "3.8"
 
 services:
-  web-dev:
+  gateway-service:
     image: taller2avengers/fiufit-api-gateway:latest
     environment:
       - USERS_URL=$USERS_URL
