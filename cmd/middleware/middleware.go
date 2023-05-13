@@ -3,6 +3,7 @@ package middleware
 import (
 	"bytes"
 	"encoding/json"
+	"log"
 	"net/http"
 	"net/http/httputil"
 	"net/url"
@@ -32,7 +33,9 @@ func SetQuery(key, value string) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		query := c.Request.URL.Query()
 		query.Add(key,value)
+		log.Printf("Query params before: %v", query)
 		c.Request.URL.RawQuery = query.Encode()
+		log.Printf("Query params after: %v", c.Request.URL.RawQuery)
 	}
 }
 
