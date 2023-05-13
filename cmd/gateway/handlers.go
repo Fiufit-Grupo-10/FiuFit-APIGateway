@@ -29,8 +29,8 @@ func UpdateUserProfile(url *url.URL, s auth.Service) gin.HandlerFunc {
 	usersServiceURL := &*url
 	return func(ctx *gin.Context) {
 		middleware.AuthorizeUser(s)(ctx)
+		// Verify that it's the same user
 		middleware.AbortIfNotAuthorized(ctx)
-		middleware.AddUIDToRequestURL()(ctx)
 		middleware.ReverseProxy(usersServiceURL)(ctx)
 	}
 }

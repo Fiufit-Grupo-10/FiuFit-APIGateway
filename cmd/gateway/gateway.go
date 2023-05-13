@@ -40,7 +40,7 @@ func Users(url *url.URL, s auth.Service) RouterConfig {
 	return func(router *gin.Engine) {
 		router.POST("/users", CreateUser(url, s))
 		router.GET("/users", GetUsersProfiles(url, s))
-		router.PUT("/users", UpdateUserProfile(url, s))
+		router.PUT("/users/:user_id", UpdateUserProfile(url, s))
 		router.GET("/trainingtypes", GetTrainingTypes(url))
 	}
 }
