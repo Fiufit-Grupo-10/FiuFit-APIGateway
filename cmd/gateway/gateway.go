@@ -55,7 +55,15 @@ func Admin(url *url.URL, s auth.Service) RouterConfig {
 func Trainers(url *url.URL, s auth.Service) RouterConfig {
 	return func(router *gin.Engine) {
 		router.POST("/plans", CreateTrainingPlan(url, s))
+		router.GET("/plans", GetAllTrainersPlans(url, s))
 		router.PUT("/plans/:plan_id", ModifyTrainingPlan(url, s))
-		router.GET("/plans", GetTrainerPlans(url, s))
+		router.GET("/plans/:trainer_id", GetTrainerPlans(url, s))
+	}
+}
+
+func Reviews(url *url.URL, s auth.Service) RouterConfig {
+	return func(router *gin.Engine) {
+		router.POST("/reviews", CreateReview(url, s))
+		router.GET("/reviews/:plan_id", GetTrainingPlanReviews(url, s))
 	}
 }
