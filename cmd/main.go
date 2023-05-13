@@ -10,6 +10,7 @@ import (
 )
 
 func main() {
+	log.Println("=====NUEVO======")
 	ctx := context.Background()
 	f, err := auth.GetFirebase(ctx)
 	if err != nil {
