@@ -60,6 +60,7 @@ func AuthorizeUser(s auth.Service) gin.HandlerFunc {
 		token := c.Request.Header.Get("Authorization")
 		uid, err := s.VerifyToken(token)
 		if err != nil {
+			log.Println("Fallo en firebase")
 			c.Set(authorizedKey, false)
 			return
 		}
@@ -99,12 +100,12 @@ func AuthorizeAdmin(url *url.URL) gin.HandlerFunc {
 func AddUIDToRequestURL() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		UID, ok := getUID(c)
+		log.Println(UID)
 		if !ok {
 			c.AbortWithStatus(http.StatusInternalServerError)
 			return
 		}
 		// Set the endpoint to request in the users service
-		log.Println(UID)
 		c.Request.URL.Path = path.Join(c.Request.URL.Path, UID)
 	}
 }
@@ -243,6 +244,7 @@ func RemovePathFromRequestURL(path string) gin.HandlerFunc {
 
 func AbortIfNotAuthorized(ctx *gin.Context) {
 	authorized, found := getAuthorized(ctx)
+	log.Printf("Esta autorizado?: %v\n", authorized)
 	//should never fail dev error
 	if !found {
 		ctx.AbortWithStatus(http.StatusInternalServerError)
