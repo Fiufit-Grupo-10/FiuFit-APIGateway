@@ -1,10 +1,17 @@
 version: "3.8"
-
 services:
-  web-dev:
-    image: taller2avengers/fiufit-api-gateway:latest
+  gateway-svc:
+    dockerfile: Dockerfile
+       args:
+         - USERS_URL=$USERS_URL
+         - TRAINERS_URL=$TRAINERS_URL
+     ports:
+       - "8080:8080"
+     volumes:
+      - ./:/app
     environment:
       - USERS_URL=$USERS_URL
       - TRAINERS_URL=$TRAINERS_URL
     ports:
       - "8080:8080"
+
