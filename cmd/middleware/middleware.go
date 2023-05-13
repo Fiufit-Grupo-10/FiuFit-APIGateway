@@ -3,6 +3,7 @@ package middleware
 import (
 	"bytes"
 	"encoding/json"
+	"log"
 	"net/http"
 	"net/http/httputil"
 	"net/url"
@@ -59,11 +60,13 @@ func AuthorizeUser(s auth.Service) gin.HandlerFunc {
 		token := c.Request.Header.Get("Authorization")
 		uid, err := s.VerifyToken(token)
 		if err != nil {
+			log.Println("Fallo en firebase")
 			c.Set(authorizedKey, false)
 			return
 		}
 		// Magic value const
 		c.Set(uidKey, uid)
+		log.Println(uid)
 		c.Set(authorizedKey, true)
 	}
 }
@@ -97,6 +100,7 @@ func AuthorizeAdmin(url *url.URL) gin.HandlerFunc {
 func AddUIDToRequestURL() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		UID, ok := getUID(c)
+		log.Println(UID)
 		if !ok {
 			c.AbortWithStatus(http.StatusInternalServerError)
 			return
@@ -240,6 +244,7 @@ func RemovePathFromRequestURL(path string) gin.HandlerFunc {
 
 func AbortIfNotAuthorized(ctx *gin.Context) {
 	authorized, found := getAuthorized(ctx)
+	log.Printf("Esta autorizado?: %v\n", authorized)
 	//should never fail dev error
 	if !found {
 		ctx.AbortWithStatus(http.StatusInternalServerError)
@@ -247,6 +252,7 @@ func AbortIfNotAuthorized(ctx *gin.Context) {
 	}
 
 	if !authorized {
+		log.Println("No esta autorizado")
 		ctx.AbortWithStatus(http.StatusUnauthorized)
 	}
 }
