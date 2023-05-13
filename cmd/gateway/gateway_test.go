@@ -82,7 +82,7 @@ func TestGateway(t *testing.T) {
 			gateway := New(Users(usersServiceURL, s))
 
 			w := CreateTestResponseRecorder()
-			req, _ := http.NewRequest(http.MethodPut, "/users", bytes.NewReader(profileDataJSON))
+			req, _ := http.NewRequest(http.MethodPut, "/users/123", bytes.NewReader(profileDataJSON))
 			req.Header.Set("Authorization", "abc")
 
 			gateway.ServeHTTP(w, req)
