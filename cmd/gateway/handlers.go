@@ -29,6 +29,7 @@ func UpdateUserProfile(url *url.URL, s auth.Service) gin.HandlerFunc {
 	usersServiceURL := &*url
 	return func(ctx *gin.Context) {
 		middleware.AuthorizeUser(s)(ctx)
+		middleware.AbortIfNotAuthorized(ctx)
 		middleware.AddUIDToRequestURL()(ctx)
 		middleware.ReverseProxy(usersServiceURL)(ctx)
 	}
@@ -48,6 +49,7 @@ func GetUsersProfilesAdmin(url *url.URL, s auth.Service) gin.HandlerFunc {
 	usersServiceURL := &*url
 	return func(ctx *gin.Context) {
 		middleware.AuthorizeUser(s)(ctx)
+		middleware.AbortIfNotAuthorized(ctx)
 		middleware.AuthorizeAdmin(usersServiceURL)(ctx)
 		middleware.RemovePathFromRequestURL("/admins")(ctx)
 		middleware.SetQuery("admin", "true")(ctx)
