@@ -1,7 +1,6 @@
 package gateway
 
 import (
-	"net/http"
 	"net/url"
 
 	"fiufit.api.gateway/cmd/middleware"
