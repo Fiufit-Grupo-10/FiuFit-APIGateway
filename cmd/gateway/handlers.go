@@ -1,6 +1,7 @@
 package gateway
 
 import (
+	"net/http"
 	"net/url"
 
 	"fiufit.api.gateway/cmd/middleware"
@@ -67,6 +68,7 @@ func CreateTrainingPlan(url *url.URL, s auth.Service) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		middleware.AuthorizeUser(s)(ctx)
 		// Verify that the user is indeed a trainer
+		middleware.AbortIfNotAuthorized(ctx)
 		middleware.ReverseProxy(trainersServiceURL)(ctx)
 	}
 }
@@ -76,6 +78,7 @@ func ModifyTrainingPlan(url *url.URL, s auth.Service) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		middleware.AuthorizeUser(s)(ctx)
 		// Verify that the user is indeed a trainer
+		middleware.AbortIfNotAuthorized(ctx)
 		middleware.ReverseProxy(trainersServiceURL)(ctx)
 	}
 }
@@ -85,6 +88,7 @@ func GetTrainerPlans(url *url.URL, s auth.Service) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		middleware.AuthorizeUser(s)(ctx)
 		// Verify that the user is indeed a trainer
+		middleware.AbortIfNotAuthorized(ctx)
 		middleware.AddUIDToRequestURL()(ctx)
 		middleware.ReverseProxy(trainersServiceURL)(ctx)
 	}

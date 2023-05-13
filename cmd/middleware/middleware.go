@@ -237,3 +237,16 @@ func RemovePathFromRequestURL(path string) gin.HandlerFunc {
 		c.Request.URL.Path = newURLPath
 	}
 }
+
+func AbortIfNotAuthorized(ctx *gin.Context) {
+	authorized, found := getAuthorized(ctx)
+	//should never fail dev error
+	if !found {
+		ctx.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+
+	if !authorized {
+		ctx.AbortWithStatus(http.StatusUnauthorized)
+	}
+}
