@@ -3,6 +3,7 @@ package middleware
 import (
 	"bytes"
 	"encoding/json"
+	"log"
 	"net/http"
 	"net/http/httputil"
 	"net/url"
@@ -64,6 +65,7 @@ func AuthorizeUser(s auth.Service) gin.HandlerFunc {
 		}
 		// Magic value const
 		c.Set(uidKey, uid)
+		log.Println(uid)
 		c.Set(authorizedKey, true)
 	}
 }
@@ -102,6 +104,7 @@ func AddUIDToRequestURL() gin.HandlerFunc {
 			return
 		}
 		// Set the endpoint to request in the users service
+		log.Println(UID)
 		c.Request.URL.Path = path.Join(c.Request.URL.Path, UID)
 	}
 }
@@ -247,6 +250,7 @@ func AbortIfNotAuthorized(ctx *gin.Context) {
 	}
 
 	if !authorized {
+		log.Println("No esta autorizado")
 		ctx.AbortWithStatus(http.StatusUnauthorized)
 	}
 }
