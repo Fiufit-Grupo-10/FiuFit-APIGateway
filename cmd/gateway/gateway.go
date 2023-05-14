@@ -24,10 +24,6 @@ func (g *Gateway) Run(addr ...string) {
 
 func New(configs ...RouterConfig) *Gateway {
 	router := gin.Default()
-	//TODO: Check that this line doesn't break the CORS middleware
-	// router.NoRoute(func(c *gin.Context) {
-	// 	c.JSON(http.StatusNotFound, gin.H{"code": "PAGE_NOT_FOUND", "message": "404 not found"})
-	// })
 	router.Use(middleware.Cors())
 	for _, option := range configs {
 		option(router)
@@ -38,32 +34,81 @@ func New(configs ...RouterConfig) *Gateway {
 // Sets the routes for the users endpoint
 func Users(url *url.URL, s auth.Service) RouterConfig {
 	return func(router *gin.Engine) {
-		router.POST("/users", CreateUser(url, s))
-		router.GET("/users", GetUsersProfiles(url, s))
-		router.PUT("/users/:user_id", UpdateUserProfile(url, s))
-		router.GET("/trainingtypes", GetTrainingTypes(url))
+
+		router.POST("/users", middleware.CreateUser(s), middleware.ReverseProxy(&*url))
+
+		router.GET("/users", middleware.AuthorizeUser(s),
+			middleware.ExecuteIf(middleware.IsAuthorized,
+				middleware.AddUIDToRequestURL(),
+				middleware.SetQuery("admin", "false")),
+			middleware.ReverseProxy(&*url))
+
+		router.PUT("/users/:user_id", middleware.AuthorizeUser(s),
+			// Verify that it's the same user
+			middleware.AbortIfNotAuthorized,
+			middleware.ReverseProxy(&*url))
+
+		router.GET("/trainingtypes", middleware.ReverseProxy(&*url))
 	}
 }
 
 func Admin(url *url.URL, s auth.Service) RouterConfig {
 	return func(router *gin.Engine) {
-		router.POST("/admins", CreateAdmin(url, s))
-		router.GET("/admins/users", GetUsersProfilesAdmin(url, s))
+		router.POST("/admins",
+			middleware.AuthorizeUser(s),
+			middleware.AbortIfNotAuthorized,
+			middleware.AuthorizeAdmin(&*url),
+			middleware.CreateAdmin(s),
+			middleware.ReverseProxy(&*url))
+
+		router.GET("/admins/users",
+			middleware.AuthorizeUser(s),
+			middleware.AbortIfNotAuthorized,
+			middleware.AuthorizeAdmin(&*url),
+			middleware.RemovePathFromRequestURL("/admins"),
+			middleware.SetQuery("admin", "true"),
+			middleware.ReverseProxy(&*url))
 	}
 }
 
 func Trainers(url *url.URL, s auth.Service) RouterConfig {
 	return func(router *gin.Engine) {
-		router.POST("/plans", CreateTrainingPlan(url, s))
-		router.GET("/plans", GetAllTrainersPlans(url, s))
-		router.PUT("/plans/:plan_id", ModifyTrainingPlan(url, s))
-		router.GET("/plans/:trainer_id", GetTrainerPlans(url, s))
+		router.POST("/plans",
+			middleware.AuthorizeUser(s),
+			// Verify that the user is indeed a trainer
+			middleware.AbortIfNotAuthorized,
+			middleware.ReverseProxy(&*url))
+
+		router.GET("/plans",
+			middleware.AuthorizeUser(s),
+			middleware.AbortIfNotAuthorized,
+			middleware.ReverseProxy(&*url))
+
+		router.PUT("/plans/:plan_id",
+			middleware.AuthorizeUser(s),
+			// Verify that the user is indeed a trainer
+			middleware.AbortIfNotAuthorized,
+			middleware.ReverseProxy(&*url))
+
+		router.GET("/plans/:trainer_id",
+			middleware.AuthorizeUser(s),
+			// Verify that the user is indeed a trainer, and that it's the same
+			middleware.AbortIfNotAuthorized,
+			middleware.ReverseProxy(&*url))
 	}
 }
 
 func Reviews(url *url.URL, s auth.Service) RouterConfig {
 	return func(router *gin.Engine) {
-		router.POST("/reviews", CreateReview(url, s))
-		router.GET("/reviews/:plan_id", GetTrainingPlanReviews(url, s))
+		router.POST("/reviews",
+			middleware.AuthorizeUser(s),
+			middleware.AbortIfNotAuthorized,
+			middleware.ReverseProxy(&*url))
+
+		router.GET("/reviews/:plan_id",
+			middleware.AuthorizeUser(s),
+			// Verify that the user is indeed a trainer, and that it's the same
+			middleware.AbortIfNotAuthorized,
+			middleware.ReverseProxy(&*url))
 	}
 }
