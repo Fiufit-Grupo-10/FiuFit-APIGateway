@@ -3,7 +3,7 @@ package auth
 import (
 	"context"
 
-	"firebase.google.com/go/v4"
+	firebase "firebase.google.com/go/v4"
 	"firebase.google.com/go/v4/auth"
 	"google.golang.org/api/option"
 )
@@ -57,4 +57,18 @@ func (f *Firebase) VerifyToken(token string) (string, error) {
 		return "", err
 	}
 	return tokenData.UID, nil
+}
+
+func (f *Firebase) GetUser(uid string) (UserModel, error) {
+	ctx := context.Background()
+	user, err := f.authClient.GetUser(ctx, uid)
+	if err != nil {
+		return UserModel{}, nil
+	}
+	
+	return UserModel{
+		Email:    user.Email,
+		Username: user.DisplayName,
+		UID:      uid,
+	}, nil
 }
