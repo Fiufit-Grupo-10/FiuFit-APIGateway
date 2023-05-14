@@ -238,6 +238,10 @@ func (a AuthTestService) VerifyToken(token string) (string, error) {
 	return "123", nil
 }
 
+func (a AuthTestService) GetUser(uid string) (auth.UserModel, error) {
+	return auth.UserModel{}, nil
+}
+
 // The types below are necessary for tests to run Gin requires that
 // the recorder implements the CloseNotify interface. So we generated
 // a wrapper that implements it.

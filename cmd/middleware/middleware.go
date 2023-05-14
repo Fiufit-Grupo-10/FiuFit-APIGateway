@@ -3,7 +3,6 @@ package middleware
 import (
 	"bytes"
 	"encoding/json"
-	"log"
 	"net/http"
 	"net/http/httputil"
 	"net/url"
@@ -32,10 +31,8 @@ func ExecuteIf(guard func(*gin.Context) bool, a, b gin.HandlerFunc) gin.HandlerF
 func SetQuery(key, value string) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		query := c.Request.URL.Query()
-		query.Add(key,value)
-		log.Printf("Query params before: %v", query)
+		query.Add(key, value)
 		c.Request.URL.RawQuery = query.Encode()
-		log.Printf("Query params after: %v", c.Request.URL.RawQuery)
 	}
 }
 
@@ -150,7 +147,13 @@ func CreateUser(s auth.Service) gin.HandlerFunc {
 			return
 		}
 
-		userData, err := s.CreateUser(signUpData)
+		var userData auth.UserModel
+		if signUpData.Federated {
+			userData, err = s.GetUser(signUpData.UID)
+		} else {
+			userData, err = s.CreateUser(signUpData)
+		}
+		
 		if err != nil {
 			c.AbortWithStatusJSON(http.StatusConflict, gin.H{"error": err.Error()})
 			return

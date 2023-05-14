@@ -520,3 +520,7 @@ func (a *AuthTestService) VerifyToken(token string) (string, error) {
 	}
 	return "123", nil
 }
+
+func (a *AuthTestService) GetUser(uid string) (auth.UserModel, error) {
+	return auth.UserModel{}, nil
+}
