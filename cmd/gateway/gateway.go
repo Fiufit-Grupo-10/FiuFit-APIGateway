@@ -36,7 +36,9 @@ func Users(url *url.URL, s auth.Service) RouterConfig {
 	return func(router *gin.Engine) {
 
 		router.POST("/users", middleware.CreateUser(s), middleware.ReverseProxy(&*url))
-
+		// Quick fix
+		router.GET("/users/:id", middleware.ReverseProxy(&*url))
+		// TODO: Remove, and redo
 		router.GET("/users", middleware.AuthorizeUser(s),
 			middleware.ExecuteIf(middleware.IsAuthorized,
 				middleware.AddUIDToRequestURL(),
