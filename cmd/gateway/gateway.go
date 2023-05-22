@@ -38,7 +38,7 @@ func Users(url *url.URL, s auth.Service) RouterConfig {
 		router.POST("/users", middleware.CreateUser(s), middleware.ReverseProxy(&*url))
 
 		// TODO: Ask front
-		router.GET("/users/:id", middleware.AuthorizeUser(s), middleware.ReverseProxy(&*url))
+		router.GET("/users/:user_id", middleware.AuthorizeUser(s), middleware.ReverseProxy(&*url))
 
 		router.GET("/users", middleware.AuthorizeUser(s),
 			middleware.ExecuteIf(middleware.IsAuthorized, middleware.AddUIDToRequestURL(), func(c *gin.Context) {}),
