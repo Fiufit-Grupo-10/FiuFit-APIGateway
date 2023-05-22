@@ -41,7 +41,9 @@ func Users(url *url.URL, s auth.Service) RouterConfig {
 		router.GET("/users/:user_id", middleware.AuthorizeUser(s), middleware.ReverseProxy(&*url))
 
 		router.GET("/users", middleware.AuthorizeUser(s),
-			middleware.ExecuteIf(middleware.IsAuthorized, middleware.AddUIDToRequestURL(), func(c *gin.Context) {}),
+			middleware.ExecuteIf(middleware.IsAuthorized,
+				middleware.AddUIDToRequestURL(),
+				middleware.SetQuery("admin", "false")),
 			middleware.ReverseProxy(&*url))
 
 		router.PUT("/users/:user_id", middleware.AuthorizeUser(s),
