@@ -36,13 +36,12 @@ func Users(url *url.URL, s auth.Service) RouterConfig {
 	return func(router *gin.Engine) {
 
 		router.POST("/users", middleware.CreateUser(s), middleware.ReverseProxy(&*url))
-		// Quick fix
-		router.GET("/users/:id", middleware.ReverseProxy(&*url))
-		// TODO: Remove, and redo
+
+		// TODO: Ask front
+		router.GET("/users/:id", middleware.AuthorizeUser(s), middleware.ReverseProxy(&*url))
+
 		router.GET("/users", middleware.AuthorizeUser(s),
-			middleware.ExecuteIf(middleware.IsAuthorized,
-				middleware.AddUIDToRequestURL(),
-				middleware.SetQuery("admin", "false")),
+			middleware.ExecuteIf(middleware.IsAuthorized, middleware.AddUIDToRequestURL(), func(c *gin.Context) {}),
 			middleware.ReverseProxy(&*url))
 
 		router.PUT("/users/:user_id", middleware.AuthorizeUser(s),
@@ -50,7 +49,14 @@ func Users(url *url.URL, s auth.Service) RouterConfig {
 			middleware.AbortIfNotAuthorized,
 			middleware.ReverseProxy(&*url))
 
+		router.POST("/users/:user_id/followers", middleware.ReverseProxy(&*url))
+
+		router.GET("/users/:user_id/followers", middleware.ReverseProxy(&*url))
+
+		router.GET("/users/:user_id/following", middleware.ReverseProxy(&*url))
+
 		router.GET("/trainingtypes", middleware.ReverseProxy(&*url))
+
 	}
 }
 
@@ -68,6 +74,7 @@ func Admin(url *url.URL, s auth.Service) RouterConfig {
 			middleware.AbortIfNotAuthorized,
 			middleware.AuthorizeAdmin(&*url),
 			middleware.RemovePathFromRequestURL("/admins"),
+
 			middleware.SetQuery("admin", "true"),
 			middleware.ReverseProxy(&*url))
 	}
@@ -88,6 +95,8 @@ func Trainers(url *url.URL, s auth.Service) RouterConfig {
 
 		router.PUT("/plans/:plan_id",
 			middleware.AuthorizeUser(s),
+			// Get a users
+			// GET: /users?field=role
 			// Verify that the user is indeed a trainer
 			middleware.AbortIfNotAuthorized,
 			middleware.ReverseProxy(&*url))
@@ -112,5 +121,7 @@ func Reviews(url *url.URL, s auth.Service) RouterConfig {
 			// Verify that the user is indeed a trainer, and that it's the same
 			middleware.AbortIfNotAuthorized,
 			middleware.ReverseProxy(&*url))
+
+		router.GET("/reviews/:plan_id/mean", middleware.ReverseProxy(&*url))
 	}
 }
