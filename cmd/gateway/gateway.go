@@ -51,7 +51,9 @@ func Users(url *url.URL, s auth.Service) RouterConfig {
 			middleware.AbortIfNotAuthorized,
 			middleware.ReverseProxy(&*url))
 
-		router.POST("/users/:user_id/followers", middleware.ReverseProxy(&*url))
+		router.POST("/users/:user_id/followers/:follower_id", middleware.ReverseProxy(&*url))
+
+		router.DELETE("/users/:user_id/followers/:follower_id", middleware.ReverseProxy(&*url))
 
 		router.GET("/users/:user_id/followers", middleware.ReverseProxy(&*url))
 
