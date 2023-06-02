@@ -3,7 +3,6 @@ package middleware
 import (
 	"bytes"
 	"encoding/json"
-	"io"
 	"log"
 	"net/http"
 	"net/http/httputil"
