@@ -451,6 +451,99 @@ func TestExecuteIf(t *testing.T) {
 	})
 }
 
+func TestBlockUsersInAuthService(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	t.Run("Block five users", func(t *testing.T) {
+		w := CreateTestResponseRecorder()
+		c, _ := gin.CreateTestContext(w)
+		users := []BlockModel{BlockModel{
+			UID:     "a",
+			Blocked: true,
+		}, BlockModel{
+			UID:     "b",
+			Blocked: true,
+		}, BlockModel{
+			UID:     "c",
+			Blocked: true,
+		}, BlockModel{
+			UID:     "d",
+			Blocked: true,
+		}, BlockModel{
+			UID:     "e",
+			Blocked: true,
+		}}
+		s := &AuthTestService{}
+		data, _ := json.Marshal(users)
+		req, _ := http.NewRequest(http.MethodPatch, "/test", bytes.NewBuffer(data))
+		c.Request = req
+
+		ChangeBlockStatusFirebase(s)(c)
+
+		assert_eq(t, c.IsAborted(), false)
+		assert_eq(t, s.SetBlockStatusCalls, 5)
+	})
+
+	t.Run("Try to block non existent user", func(t *testing.T) {
+		w := CreateTestResponseRecorder()
+		c, _ := gin.CreateTestContext(w)
+		users := []BlockModel{BlockModel{
+			UID:     "a",
+			Blocked: true,
+		}, BlockModel{
+			UID:     "b",
+			Blocked: true,
+		}, BlockModel{
+			UID:     "c",
+			Blocked: true,
+		}, BlockModel{
+			UID:     "d",
+			Blocked: true,
+		}, BlockModel{
+			UID:     "z",
+			Blocked: true,
+		}}
+		s := &AuthTestService{}
+		data, _ := json.Marshal(users)
+		req, _ := http.NewRequest(http.MethodPatch, "/test", bytes.NewBuffer(data))
+		c.Request = req
+
+		ChangeBlockStatusFirebase(s)(c)
+
+		assert_eq(t, c.IsAborted(), true)
+		assert_eq(t, s.SetBlockStatusCalls, 0)
+		assert_eq(t, c.Writer.Status(), http.StatusNotFound)
+	})
+
+	t.Run("Receive wrong body contents", func(t *testing.T) {
+		w := CreateTestResponseRecorder()
+		c, _ := gin.CreateTestContext(w)
+		type WrongBlockModel struct {
+			UID string `json:"uid"`
+		}
+		users := []WrongBlockModel{WrongBlockModel{
+			UID: "a",
+		}, WrongBlockModel{
+			UID: "b",
+		}, WrongBlockModel{
+			UID: "c",
+		}, WrongBlockModel{
+			UID: "d",
+		}, WrongBlockModel{
+			UID: "z",
+		}}
+		s := &AuthTestService{}
+		data, _ := json.Marshal(users)
+		req, _ := http.NewRequest(http.MethodPatch, "/test", bytes.NewBuffer(data))
+		c.Request = req
+
+		ChangeBlockStatusFirebase(s)(c)
+
+		assert_eq(t, c.IsAborted(), true)
+		assert_eq(t, s.SetBlockStatusCalls, 0)
+		assert_eq(t, c.Writer.Status(), http.StatusBadRequest)
+	})
+}
+
 func TestIsAuthorized(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 	t.Run("The key is set and the user is authorized, mustn't abort", func(t *testing.T) {
@@ -503,7 +596,8 @@ func CreateTestResponseRecorder() *TestResponseRecorder {
 }
 
 type AuthTestService struct {
-	CreateUserCalls int
+	CreateUserCalls     int
+	SetBlockStatusCalls int
 }
 
 func (a *AuthTestService) CreateUser(s auth.SignUpModel) (auth.UserModel, error) {
@@ -522,5 +616,13 @@ func (a *AuthTestService) VerifyToken(token string) (string, error) {
 }
 
 func (a *AuthTestService) GetUser(uid string) (auth.UserModel, error) {
+	if uid == "z" {
+		return auth.UserModel{}, errors.New("user doesn't exist")
+	}
 	return auth.UserModel{}, nil
+}
+
+func (a *AuthTestService) SetBlockStatus(uid string, blocked bool) error {
+	a.SetBlockStatusCalls += 1
+	return nil
 }

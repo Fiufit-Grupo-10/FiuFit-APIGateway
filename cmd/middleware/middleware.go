@@ -11,12 +11,18 @@ import (
 
 	"fiufit.api.gateway/internal/auth"
 	"github.com/gin-gonic/gin"
+	"github.com/gin-gonic/gin/binding"
 )
 
 const uidKey string = "User-UID"
 const authorizedKey string = "Authorized"
 const allowedHeaders string = "Authorization, Content-Type, Content-Length"
 const allowedMethods string = "POST, GET, PUT, DELETE, OPTIONS"
+
+type BlockModel struct {
+	UID     string `json:"uid" binding:"required"`
+	Blocked bool   `json:"blocked" binding:"required"`
+}
 
 func ExecuteIf(guard func(*gin.Context) bool, a, b gin.HandlerFunc) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
@@ -25,6 +31,36 @@ func ExecuteIf(guard func(*gin.Context) bool, a, b gin.HandlerFunc) gin.HandlerF
 			return
 		}
 		b(ctx)
+	}
+}
+
+func ChangeBlockStatusFirebase(s auth.Service) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		// Conseguir uid y blocked,
+		// Tratar de bloquearlos
+		var users []BlockModel
+		err := c.ShouldBindBodyWith(&users, binding.JSON)
+		if err != nil {
+			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+
+		for _, user := range users {
+			_, err := s.GetUser(user.UID)
+			if err != nil {
+				c.AbortWithStatusJSON(http.StatusNotFound, err.Error())
+				return
+			}
+		}
+		
+		for _, user := range users {
+			// Shouldn't fail
+			err = s.SetBlockStatus(user.UID, user.Blocked)
+			if err != nil {
+				c.AbortWithStatusJSON(http.StatusInternalServerError, err.Error())
+				return
+			}
+		}
 	}
 }
 
@@ -153,7 +189,7 @@ func CreateUser(s auth.Service) gin.HandlerFunc {
 		} else {
 			userData, err = s.CreateUser(signUpData)
 		}
-		
+
 		if err != nil {
 			c.AbortWithStatusJSON(http.StatusConflict, gin.H{"error": err.Error()})
 			return

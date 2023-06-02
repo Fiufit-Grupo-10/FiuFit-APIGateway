@@ -81,6 +81,16 @@ func Admin(url *url.URL, s auth.Service) RouterConfig {
 
 			middleware.SetQuery("admin", "true"),
 			middleware.ReverseProxy(&*url))
+
+		// TODO: Add middleware to block in firebase
+		router.PATCH("/admins/users",
+			middleware.AuthorizeUser(s),
+			middleware.AbortIfNotAuthorized,
+			middleware.AuthorizeAdmin(&*url),
+			middleware.RemovePathFromRequestURL("/admins"),
+			middleware.ChangeBlockStatusFirebase(s),
+			middleware.ReverseProxy(&*url))
+
 	}
 }
 
