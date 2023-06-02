@@ -72,3 +72,13 @@ func (f *Firebase) GetUser(uid string) (UserModel, error) {
 		UID:      uid,
 	}, nil
 }
+
+func (f *Firebase) SetBlockStatus(uid string, blocked bool) error {
+	ctx := context.Background()
+	params := (&auth.UserToUpdate{}).Disabled(blocked)
+	_, err := f.authClient.UpdateUser(ctx, uid, params)
+	if err != nil {
+		return err
+	}
+	return nil
+}

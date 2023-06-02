@@ -14,6 +14,7 @@ type Service interface {
 	// info needed when validatin users
 	VerifyToken(token string) (string, error)
 	GetUser(uid string) (UserModel, error)
+	SetBlockStatus(uid string, blocked bool) error
 }
 
 type UserModel struct {

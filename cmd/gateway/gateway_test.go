@@ -242,6 +242,10 @@ func (a AuthTestService) GetUser(uid string) (auth.UserModel, error) {
 	return auth.UserModel{}, nil
 }
 
+func (a AuthTestService) SetBlockStatus(uid string, blocked bool) error {
+	return nil
+}
+
 // The types below are necessary for tests to run Gin requires that
 // the recorder implements the CloseNotify interface. So we generated
 // a wrapper that implements it.
