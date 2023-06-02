@@ -20,8 +20,8 @@ const allowedHeaders string = "Authorization, Content-Type, Content-Length"
 const allowedMethods string = "POST, GET, PUT, DELETE, OPTIONS, PATCH"
 
 type BlockModel struct {
-	UID     string `json:"uid" binding:"required"`
-	Blocked bool   `json:"blocked" binding:"required"`
+	UID     string `json:"uid"`
+	Blocked bool   `json:"blocked"`
 }
 
 func ExecuteIf(guard func(*gin.Context) bool, a, b gin.HandlerFunc) gin.HandlerFunc {
