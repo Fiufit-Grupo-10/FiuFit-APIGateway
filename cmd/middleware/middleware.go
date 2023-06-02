@@ -17,7 +17,12 @@ import (
 const uidKey string = "User-UID"
 const authorizedKey string = "Authorized"
 const allowedHeaders string = "Authorization, Content-Type, Content-Length"
-const allowedMethods string = "POST, GET, PUT, DELETE, OPTIONS"
+const allowedMethods string = "POST, GET, PUT, DELETE, OPTIONS, PATCH"
+
+type BlockModel struct {
+	UID     string `json:"uid" binding:"required"`
+	Blocked bool   `json:"blocked" binding:"required"`
+}
 
 type BlockModel struct {
 	UID     string `json:"uid" binding:"required"`
