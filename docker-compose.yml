@@ -1,9 +1,10 @@
 version: "3.8"
 
 services:
-  web-dev:
+  gateway-service:
     image: taller2avengers/fiufit-api-gateway:latest
     environment:
       - USERS_URL=$USERS_URL
+      - TRAINERS_URL=$TRAINERS_URL
     ports:
       - "8080:8080"

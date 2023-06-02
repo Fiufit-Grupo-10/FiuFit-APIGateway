@@ -82,7 +82,7 @@ func TestGateway(t *testing.T) {
 			gateway := New(Users(usersServiceURL, s))
 
 			w := CreateTestResponseRecorder()
-			req, _ := http.NewRequest(http.MethodPut, "/users", bytes.NewReader(profileDataJSON))
+			req, _ := http.NewRequest(http.MethodPut, "/users/123", bytes.NewReader(profileDataJSON))
 			req.Header.Set("Authorization", "abc")
 
 			gateway.ServeHTTP(w, req)
@@ -90,7 +90,7 @@ func TestGateway(t *testing.T) {
 			assertStatusCode(t, w.Code, http.StatusOK)
 		})
 
-	t.Run("Request an user profile, being authorized, the response body must be a json containing the users profile data",
+	t.Run("Request an user profile, being authorized, the response body must be a json containing the users private profile data",
 		func(t *testing.T) {
 			userData := auth.UserModel{UID: "123", Username: "abc", Email: "abc@xyz.com"}
 			userDataJSON, _ := json.Marshal(userData)
@@ -107,6 +107,28 @@ func TestGateway(t *testing.T) {
 			w := CreateTestResponseRecorder()
 			req, _ := http.NewRequest(http.MethodGet, "/users", nil)
 			req.Header.Set("Authorization", "abc")
+
+			gateway.ServeHTTP(w, req)
+			assertString(t, w.Body.String(), string(userDataJSON))
+		})
+
+	t.Run("Request an user profile, being unauthorized, the response body must be a json containing the users public profile data",
+		func(t *testing.T) {
+			userData := auth.UserModel{UID: "123", Username: "abc", Email: "abc@xyz.com"}
+			userDataJSON, _ := json.Marshal(userData)
+			usersService := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				assertString(t, r.URL.Path, "/users")
+				w.WriteHeader(http.StatusCreated)
+				w.Write(userDataJSON)
+			}))
+			defer usersService.Close()
+
+			usersServiceURL, _ := url.Parse(usersService.URL)
+			s := AuthTestService{}
+			gateway := New(Users(usersServiceURL, s))
+			w := CreateTestResponseRecorder()
+			req, _ := http.NewRequest(http.MethodGet, "/users", nil)
+			req.Header.Set("Authorization", "xyz")
 
 			gateway.ServeHTTP(w, req)
 			assertString(t, w.Body.String(), string(userDataJSON))
@@ -159,12 +181,15 @@ func TestGateway(t *testing.T) {
 		assertStatusCode(t, w.Code, http.StatusUnauthorized)
 	})
 
-	t.Run("An admin request all users profiles", func(t *testing.T) {
+	t.Run("An admin request all the profiles", func(t *testing.T) {
 		usersService := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			if r.Method == http.MethodGet && strings.HasPrefix(r.URL.Path, "/admins") {
+				/// Verify admin
 				assertString(t, r.URL.Path, "/admins/123")
 			} else {
+				// Gets profiles
 				assertString(t, r.URL.Path, "/users")
+				assertString(t, r.URL.Query().Get("admin"), "true")
 			}
 			w.WriteHeader(http.StatusOK)
 		}))
@@ -173,10 +198,26 @@ func TestGateway(t *testing.T) {
 		usersServiceURL, _ := url.Parse(usersService.URL)
 		s := AuthTestService{}
 		gateway := New(Admin(usersServiceURL, s))
-
 		w := CreateTestResponseRecorder()
 		req, _ := http.NewRequest(http.MethodGet, "/admins/users", nil)
 		req.Header.Set("Authorization", "abc")
+		gateway.ServeHTTP(w, req)
+	})
+
+	t.Run("An user request all the profiles", func(t *testing.T) {
+		usersService := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			assertString(t, r.URL.Path, "/users")
+			assertString(t, r.URL.Query().Get("admin"), "false")
+			w.WriteHeader(http.StatusOK)
+		}))
+		defer usersService.Close()
+
+		usersServiceURL, _ := url.Parse(usersService.URL)
+		s := AuthTestService{}
+		gateway := New(Users(usersServiceURL, s))
+		w := CreateTestResponseRecorder()
+		req, _ := http.NewRequest(http.MethodGet, "/users", nil)
+		req.Header.Set("Authorization", "xyz")
 		gateway.ServeHTTP(w, req)
 	})
 }
@@ -195,6 +236,10 @@ func (a AuthTestService) VerifyToken(token string) (string, error) {
 		return "", errors.New("unauthorized")
 	}
 	return "123", nil
+}
+
+func (a AuthTestService) GetUser(uid string) (auth.UserModel, error) {
+	return auth.UserModel{}, nil
 }
 
 // The types below are necessary for tests to run Gin requires that
