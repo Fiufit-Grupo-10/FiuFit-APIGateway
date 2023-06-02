@@ -3,7 +3,7 @@ package middleware
 import (
 	"bytes"
 	"encoding/json"
-	"log"
+	"io"
 	"net/http"
 	"net/http/httputil"
 	"net/url"
@@ -12,7 +12,6 @@ import (
 
 	"fiufit.api.gateway/internal/auth"
 	"github.com/gin-gonic/gin"
-	"github.com/gin-gonic/gin/binding"
 )
 
 const uidKey string = "User-UID"
@@ -40,9 +39,8 @@ func ChangeBlockStatusFirebase(s auth.Service) gin.HandlerFunc {
 		// Conseguir uid y blocked,
 		// Tratar de bloquearlos
 		var users []BlockModel
-		err := c.ShouldBindBodyWith(&users, binding.JSON)
+		err := c.BindJSON(&users)
 		if err != nil {
-			log.Println(err.Error())
 			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
 		}
@@ -63,6 +61,14 @@ func ChangeBlockStatusFirebase(s auth.Service) gin.HandlerFunc {
 				return
 			}
 		}
+
+		buf, err := json.Marshal(users)
+		if err != nil {
+			c.AbortWithStatusJSON(http.StatusInternalServerError, err.Error())
+			return
+		}
+
+		c.Request.Body = io.NopCloser(bytes.NewBuffer(buf))
 	}
 }
 
