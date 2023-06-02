@@ -45,6 +45,7 @@ func ChangeBlockStatusFirebase(s auth.Service) gin.HandlerFunc {
 		log.Printf("%v\n", string(ByteBody))
 		err := c.ShouldBindBodyWith(&users, binding.JSON)
 		if err != nil {
+			log.Println(err.Error())
 			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
 		}
