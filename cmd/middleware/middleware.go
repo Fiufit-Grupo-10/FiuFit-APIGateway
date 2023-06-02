@@ -3,6 +3,8 @@ package middleware
 import (
 	"bytes"
 	"encoding/json"
+	"io"
+	"log"
 	"net/http"
 	"net/http/httputil"
 	"net/url"
@@ -39,7 +41,10 @@ func ChangeBlockStatusFirebase(s auth.Service) gin.HandlerFunc {
 		// Conseguir uid y blocked,
 		// Tratar de bloquearlos
 		var users []BlockModel
+		
 		err := c.ShouldBindBodyWith(&users, binding.JSON)
+		ByteBody, _ := io.ReadAll(c.Request.Body)
+		log.Printf("%s\n", string(ByteBody))
 		if err != nil {
 			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
