@@ -24,11 +24,6 @@ type BlockModel struct {
 	Blocked bool   `json:"blocked" binding:"required"`
 }
 
-type BlockModel struct {
-	UID     string `json:"uid" binding:"required"`
-	Blocked bool   `json:"blocked" binding:"required"`
-}
-
 func ExecuteIf(guard func(*gin.Context) bool, a, b gin.HandlerFunc) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		if guard(ctx) {
