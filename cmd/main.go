@@ -41,7 +41,7 @@ func main() {
 	rawURL, found = os.LookupEnv("METRICS_URL")
 	log.Printf("rawURL: %s", rawURL)
 	if !found || rawURL != "" {
-		log.Fatal("USERS_URL enviroment variable not found")
+		log.Fatal("METRICS_URL enviroment variable not found")
 	}
 
 	metricsURL, err := url.Parse(rawURL)
