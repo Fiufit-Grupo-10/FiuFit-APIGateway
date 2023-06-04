@@ -18,7 +18,7 @@ func main() {
 	}
 	rawURL, found := os.LookupEnv("USERS_URL")
 	log.Printf("rawURL: %s", rawURL)
-	if !found || rawURL != "" {
+	if !found || rawURL == "" {
 		log.Fatal("USERS_URL enviroment variable not found")
 	}
 
@@ -29,7 +29,7 @@ func main() {
 
 	rawURL, found = os.LookupEnv("TRAINERS_URL")
 	log.Printf("rawURL: %s", rawURL)
-	if !found || rawURL != "" {
+	if !found || rawURL == "" {
 		log.Fatal("USERS_URL enviroment variable not found")
 	}
 
@@ -40,7 +40,7 @@ func main() {
 
 	rawURL, found = os.LookupEnv("METRICS_URL")
 	log.Printf("rawURL: %s", rawURL)
-	if !found || rawURL != "" {
+	if !found || rawURL == "" {
 		log.Fatal("METRICS_URL enviroment variable not found")
 	}
 
@@ -53,7 +53,8 @@ func main() {
 		gateway.Users(usersURL, f),
 		gateway.Admin(usersURL, f),
 		gateway.Trainers(trainersURL, f),
-		gateway.Reviews(trainersURL, f))
+		gateway.Reviews(trainersURL, f)
+		gateway.Metrics(metricsURL, f))
 
 	gateway.Run("0.0.0.0:8080")
 }
