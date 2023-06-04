@@ -18,7 +18,7 @@ func main() {
 	}
 	rawURL, found := os.LookupEnv("USERS_URL")
 	log.Printf("rawURL: %s", rawURL)
-	if !found && rawURL != "" {
+	if !found || rawURL != "" {
 		log.Fatal("USERS_URL enviroment variable not found")
 	}
 
@@ -29,7 +29,7 @@ func main() {
 
 	rawURL, found = os.LookupEnv("TRAINERS_URL")
 	log.Printf("rawURL: %s", rawURL)
-	if !found {
+	if !found || rawURL != "" {
 		log.Fatal("USERS_URL enviroment variable not found")
 	}
 
@@ -38,7 +38,22 @@ func main() {
 		log.Fatalf("Error parsing URL: %s", trainersURL)
 	}
 
-	gateway := gateway.New(gateway.Users(usersURL, f), gateway.Admin(usersURL, f), gateway.Trainers(trainersURL, f), gateway.Reviews(trainersURL, f))
+	rawURL, found = os.LookupEnv("METRICS_URL")
+	log.Printf("rawURL: %s", rawURL)
+	if !found || rawURL != "" {
+		log.Fatal("USERS_URL enviroment variable not found")
+	}
+
+	metricsURL, err := url.Parse(rawURL)
+	if err != nil {
+		log.Fatalf("Error parsing URL: %s", metricsURL)
+	}
+	
+	gateway := gateway.New(
+		gateway.Users(usersURL, f),
+		gateway.Admin(usersURL, f),
+		gateway.Trainers(trainersURL, f),
+		gateway.Reviews(trainersURL, f))
 
 	gateway.Run("0.0.0.0:8080")
 }

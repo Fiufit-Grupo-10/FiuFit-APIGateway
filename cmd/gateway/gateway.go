@@ -35,10 +35,14 @@ func New(configs ...RouterConfig) *Gateway {
 func Users(url *url.URL, s auth.Service) RouterConfig {
 	return func(router *gin.Engine) {
 
-		router.POST("/users", middleware.CreateUser(s), middleware.ReverseProxy(&*url))
+		router.POST("/users",
+			middleware.CreateUser(s),
+			middleware.ReverseProxy(&*url))
 
 		// TODO: Ask front
-		router.GET("/users/:user_id", middleware.AuthorizeUser(s), middleware.ReverseProxy(&*url))
+		router.GET("/users/:user_id",
+			middleware.AuthorizeUser(s),
+			middleware.ReverseProxy(&*url))
 
 		router.GET("/users", middleware.AuthorizeUser(s),
 			middleware.ExecuteIf(middleware.IsAuthorized,
@@ -46,7 +50,8 @@ func Users(url *url.URL, s auth.Service) RouterConfig {
 				middleware.SetQuery("admin", "false")),
 			middleware.ReverseProxy(&*url))
 
-		router.PUT("/users/:user_id", middleware.AuthorizeUser(s),
+		router.PUT("/users/:user_id",
+			middleware.AuthorizeUser(s),
 			// Verify that it's the same user
 			middleware.AbortIfNotAuthorized,
 			middleware.ReverseProxy(&*url))
@@ -121,7 +126,9 @@ func Trainers(url *url.URL, s auth.Service) RouterConfig {
 			middleware.AbortIfNotAuthorized,
 			middleware.ReverseProxy(&*url))
 		// TODO: Verify trainer_id vs token
-		router.DELETE("/plans/:trainer_id/:plan_id", middleware.AuthorizeUser(s), middleware.ReverseProxy(&*url))
+		router.DELETE("/plans/:trainer_id/:plan_id",
+			middleware.AuthorizeUser(s),
+			middleware.ReverseProxy(&*url))
 	}
 }
 
@@ -139,5 +146,12 @@ func Reviews(url *url.URL, s auth.Service) RouterConfig {
 			middleware.ReverseProxy(&*url))
 
 		router.GET("/reviews/:plan_id/mean", middleware.ReverseProxy(&*url))
+	}
+}
+
+func Metrics(url *url.URL, s auth.Service) RouterConfig {
+	return func(router *gin.Engine) {
+		router.POST("/metrics", middleware.ReverseProxy(&*url))
+		router.GET("/metrics", middleware.ReverseProxy(&*url))
 	}
 }
