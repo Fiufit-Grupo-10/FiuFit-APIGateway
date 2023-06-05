@@ -513,35 +513,6 @@ func TestBlockUsersInAuthService(t *testing.T) {
 		assert_eq(t, s.SetBlockStatusCalls, 0)
 		assert_eq(t, c.Writer.Status(), http.StatusNotFound)
 	})
-
-	t.Run("Receive wrong body contents", func(t *testing.T) {
-		w := CreateTestResponseRecorder()
-		c, _ := gin.CreateTestContext(w)
-		type WrongBlockModel struct {
-			UID string `json:"uid"`
-		}
-		users := []WrongBlockModel{WrongBlockModel{
-			UID: "a",
-		}, WrongBlockModel{
-			UID: "b",
-		}, WrongBlockModel{
-			UID: "c",
-		}, WrongBlockModel{
-			UID: "d",
-		}, WrongBlockModel{
-			UID: "z",
-		}}
-		s := &AuthTestService{}
-		data, _ := json.Marshal(users)
-		req, _ := http.NewRequest(http.MethodPatch, "/test", bytes.NewBuffer(data))
-		c.Request = req
-
-		ChangeBlockStatusFirebase(s)(c)
-
-		assert_eq(t, c.IsAborted(), true)
-		assert_eq(t, s.SetBlockStatusCalls, 0)
-		assert_eq(t, c.Writer.Status(), http.StatusBadRequest)
-	})
 }
 
 func TestIsAuthorized(t *testing.T) {

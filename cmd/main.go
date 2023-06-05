@@ -51,7 +51,7 @@ func main() {
 
 	gateway := gateway.New(
 		gateway.Users(usersURL, f),
-		gateway.Admin(usersURL, f),
+		gateway.Admin(usersURL, trainersURL, f),
 		gateway.Trainers(trainersURL, f),
 		gateway.Reviews(trainersURL, f),
 		gateway.Metrics(metricsURL, f))
