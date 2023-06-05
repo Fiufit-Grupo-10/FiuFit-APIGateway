@@ -144,12 +144,20 @@ func Trainers(url *url.URL, s auth.Service) RouterConfig {
 			middleware.AbortIfNotAuthorized,
 			middleware.ReverseProxy(&*url))
 
-		router.GET("/plans/:trainer_id",
+		router.GET("/plans/:plan_id",
 			middleware.AuthorizeUser(s),
 			// Verify that the user is indeed a trainer, and that it's the same
 			middleware.AbortIfNotAuthorized,
 			middleware.SetQuery("admin", "false"),
 			middleware.ReverseProxy(&*url))
+
+		router.GET("/trainers/:trainer_id/plans",
+			middleware.AuthorizeUser(s),
+			// Verify that the user is indeed a trainer, and that it's the same
+			middleware.AbortIfNotAuthorized,
+			middleware.SetQuery("admin", "false"),
+			middleware.ReverseProxy(&*url))
+		
 		// TODO: Verify trainer_id vs token
 		router.DELETE("/plans/:trainer_id/:plan_id",
 			middleware.AuthorizeUser(s),
