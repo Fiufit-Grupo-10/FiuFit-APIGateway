@@ -144,8 +144,9 @@ func TestGateway(t *testing.T) {
 		defer usersService.Close()
 
 		usersServiceURL, _ := url.Parse(usersService.URL)
+		trainersServiceURL, _ := url.Parse("")
 		s := AuthTestService{}
-		gateway := New(Admin(usersServiceURL, s))
+		gateway := New(Admin(usersServiceURL, trainersServiceURL, s))
 
 		signUpData := auth.SignUpModel{
 			Email: "abc@xyz.com", Username: "abc", Password: "123",
@@ -168,7 +169,8 @@ func TestGateway(t *testing.T) {
 
 		usersServiceURL, _ := url.Parse(usersService.URL)
 		s := AuthTestService{}
-		gateway := New(Admin(usersServiceURL, s))
+		trainersServiceURL, _ := url.Parse("")
+		gateway := New(Admin(usersServiceURL, trainersServiceURL, s))
 
 		signUpData := auth.SignUpModel{
 			Email: "abc@xyz.com", Username: "abc", Password: "123",
@@ -197,7 +199,8 @@ func TestGateway(t *testing.T) {
 
 		usersServiceURL, _ := url.Parse(usersService.URL)
 		s := AuthTestService{}
-		gateway := New(Admin(usersServiceURL, s))
+		trainersServiceURL, _ := url.Parse("")
+		gateway := New(Admin(usersServiceURL, trainersServiceURL, s))
 		w := CreateTestResponseRecorder()
 		req, _ := http.NewRequest(http.MethodGet, "/admins/users", nil)
 		req.Header.Set("Authorization", "abc")
