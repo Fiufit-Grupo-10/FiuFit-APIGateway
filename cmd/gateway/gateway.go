@@ -117,7 +117,6 @@ func Admin(usersUrl *url.URL, trainersURL *url.URL, s auth.Service) RouterConfig
 			middleware.AbortIfNotAuthorized,
 			middleware.AuthorizeAdmin(&*usersUrl),
 			middleware.RemovePathFromRequestURL("/admins"),
-			middleware.ChangeBlockStatusFirebase(s),
 			middleware.ReverseProxy(&*trainersURL))
 	}
 }
