@@ -156,7 +156,7 @@ func Trainers(url *url.URL, s auth.Service) RouterConfig {
 			middleware.AbortIfNotAuthorized,
 			middleware.SetQuery("admin", "false"),
 			middleware.ReverseProxy(&*url))
-		
+
 		// TODO: Verify trainer_id vs token
 		router.DELETE("/plans/:trainer_id/:plan_id",
 			middleware.AuthorizeUser(s),
@@ -181,10 +181,30 @@ func Reviews(url *url.URL, s auth.Service) RouterConfig {
 	}
 }
 
+func Goals(url *url.URL, s auth.Service) RouterConfig {
+	return func(router *gin.Engine) {
+		router.POST("/users/:user_id/goals",
+			middleware.AuthorizeUser(s),
+			middleware.AbortIfNotAuthorized,
+			middleware.ReverseProxy(&*url))
+
+		router.PUT("/users/:user_id/goals",
+			middleware.AuthorizeUser(s),
+			middleware.AbortIfNotAuthorized,
+			middleware.ReverseProxy(&*url))
+
+		router.GET("/users/:user_id/goals",
+			middleware.AuthorizeUser(s),
+			middleware.AbortIfNotAuthorized,
+			middleware.ReverseProxy(&*url))
+	}
+}
+
 // Move to admin
 func Metrics(url *url.URL, s auth.Service) RouterConfig {
 	return func(router *gin.Engine) {
 		router.POST("/metrics", middleware.ReverseProxy(&*url))
 		router.GET("/metrics", middleware.ReverseProxy(&*url))
+		router.GET("/metrics/totals", middleware.ReverseProxy(&*url))
 	}
 }

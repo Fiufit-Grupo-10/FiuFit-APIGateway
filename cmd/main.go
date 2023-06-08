@@ -49,12 +49,24 @@ func main() {
 		log.Fatalf("Error parsing URL: %s", metricsURL)
 	}
 
+	rawURL, found = os.LookupEnv("GOALS_URL")
+	log.Printf("rawURL: %s", rawURL)
+	if !found || rawURL == "" {
+		log.Fatal("GOALS_URL enviroment variable not found")
+	}
+
+	goalsURL, err := url.Parse(rawURL)
+	if err != nil {
+		log.Fatalf("Error parsing URL: %s", goalsURL)
+	}
+
 	gateway := gateway.New(
 		gateway.Users(usersURL, f),
 		gateway.Admin(usersURL, trainersURL, f),
 		gateway.Trainers(trainersURL, f),
 		gateway.Reviews(trainersURL, f),
-		gateway.Metrics(metricsURL, f))
+		gateway.Metrics(metricsURL, f),
+		gateway.Goals(goalsURL, f))
 
 	gateway.Run("0.0.0.0:8080")
 }
