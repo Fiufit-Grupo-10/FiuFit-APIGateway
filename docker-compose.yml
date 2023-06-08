@@ -7,5 +7,6 @@ services:
       - USERS_URL=$USERS_URL
       - TRAINERS_URL=$TRAINERS_URL
       - METRICS_URL=$METRICS_URL
+      - GOALS_URL=$GOALS_URL
     ports:
       - "8080:8080"
