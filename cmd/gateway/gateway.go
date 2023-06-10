@@ -202,6 +202,11 @@ func Goals(url *url.URL, s auth.Service) RouterConfig {
 			middleware.AuthorizeUser(s),
 			middleware.AbortIfNotAuthorized,
 			middleware.ReverseProxy(*&url))
+
+		router.GET("/users/:user_id/training",
+			middleware.AuthorizeUser(s),
+			middleware.AbortIfNotAuthorized,
+			middleware.ReverseProxy(*&url))
 	}
 }
 
