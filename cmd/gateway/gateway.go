@@ -65,7 +65,6 @@ func Users(url *url.URL, s auth.Service) RouterConfig {
 		router.GET("/users/:user_id/following", middleware.ReverseProxy(&*url))
 
 		router.GET("/trainingtypes", middleware.ReverseProxy(&*url))
-
 	}
 }
 
@@ -116,6 +115,7 @@ func Admin(usersUrl *url.URL, trainersURL *url.URL, s auth.Service) RouterConfig
 			middleware.AuthorizeUser(s),
 			middleware.AbortIfNotAuthorized,
 			middleware.AuthorizeAdmin(&*usersUrl),
+			middleware.SetQuery("admin", "true"),
 			middleware.RemovePathFromRequestURL("/admins"),
 			middleware.ReverseProxy(&*trainersURL))
 	}

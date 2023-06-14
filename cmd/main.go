@@ -16,6 +16,7 @@ func main() {
 	if err != nil {
 		log.Fatalf("Couldn't start firebase service: %s", err.Error())
 	}
+	// Users
 	rawURL, found := os.LookupEnv("USERS_URL")
 	log.Printf("rawURL: %s", rawURL)
 	if !found || rawURL == "" {
@@ -27,6 +28,7 @@ func main() {
 		log.Fatalf("Error parsing URL: %s", usersURL)
 	}
 
+	// Trainers
 	rawURL, found = os.LookupEnv("TRAINERS_URL")
 	log.Printf("rawURL: %s", rawURL)
 	if !found || rawURL == "" {
@@ -38,6 +40,7 @@ func main() {
 		log.Fatalf("Error parsing URL: %s", trainersURL)
 	}
 
+	// Metrics
 	rawURL, found = os.LookupEnv("METRICS_URL")
 	log.Printf("rawURL: %s", rawURL)
 	if !found || rawURL == "" {
@@ -49,6 +52,7 @@ func main() {
 		log.Fatalf("Error parsing URL: %s", metricsURL)
 	}
 
+	// Goals
 	rawURL, found = os.LookupEnv("GOALS_URL")
 	log.Printf("rawURL: %s", rawURL)
 	if !found || rawURL == "" {
