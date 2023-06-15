@@ -2,12 +2,21 @@ package main
 
 import (
 	"context"
-	"fiufit.api.gateway/cmd/gateway"
-	"fiufit.api.gateway/internal/auth"
-	"log"
 	"net/url"
 	"os"
+
+	"fiufit.api.gateway/cmd/gateway"
+	"fiufit.api.gateway/internal/auth"
+
+	log "github.com/sirupsen/logrus"
+	"gopkg.in/DataDog/dd-trace-go.v1/ddtrace/tracer"
 )
+
+func init() {
+	log.SetLevel(log.InfoLevel)
+	log.SetFormatter(&log.JSONFormatter{})
+
+}
 
 func main() {
 	log.Println("=====NUEVO======")
@@ -63,6 +72,9 @@ func main() {
 	if err != nil {
 		log.Fatalf("Error parsing URL: %s", goalsURL)
 	}
+
+	tracer.Start(tracer.WithServiceName("fiufit-api-gateway"))
+	defer tracer.Stop()
 
 	gateway := gateway.New(
 		gateway.Users(usersURL, f),
