@@ -28,6 +28,7 @@ func (g *Gateway) Run(addr ...string) {
 
 func New(configs ...RouterConfig) *Gateway {
 	router := gin.Default()
+	router.Use(gintrace.Middleware("service-external-gateway"))
 	router.Use(middleware.Cors())
 	router.Use(gintrace.Middleware("fiufit-api-gateway"))
 	for _, option := range configs {

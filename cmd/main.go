@@ -15,7 +15,6 @@ import (
 func init() {
 	log.SetLevel(log.InfoLevel)
 	log.SetFormatter(&log.JSONFormatter{})
-
 }
 
 func main() {
@@ -73,7 +72,8 @@ func main() {
 		log.Fatalf("Error parsing URL: %s", goalsURL)
 	}
 
-	tracer.Start(tracer.WithServiceName("fiufit-api-gateway"))
+	tracer.Start(tracer.WithService("service-external-gateway"))
+
 	defer tracer.Stop()
 
 	gateway := gateway.New(
