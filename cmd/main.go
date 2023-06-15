@@ -73,6 +73,7 @@ func main() {
 	}
 
 	tracer.Start(tracer.WithService("service-external-gateway"))
+
 	defer tracer.Stop()
 
 	gateway := gateway.New(

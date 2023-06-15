@@ -8,8 +8,8 @@ import (
 	"fiufit.api.gateway/cmd/middleware"
 	"fiufit.api.gateway/internal/auth"
 	"github.com/gin-gonic/gin"
-	log "github.com/sirupsen/logrus"
 	gintrace "gopkg.in/DataDog/dd-trace-go.v1/contrib/gin-gonic/gin"
+	log "github.com/sirupsen/logrus"
 )
 
 type RouterConfig func(*gin.Engine)
@@ -30,6 +30,7 @@ func New(configs ...RouterConfig) *Gateway {
 	router := gin.Default()
 	router.Use(gintrace.Middleware("service-external-gateway"))
 	router.Use(middleware.Cors())
+	router.Use(gintrace.Middleware("fiufit-api-gateway"))
 	for _, option := range configs {
 		option(router)
 	}
