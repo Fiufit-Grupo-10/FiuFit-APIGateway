@@ -1,11 +1,15 @@
 package gateway
 
 import (
+	"net/http"
+	"net/url"
+	"time"
+
 	"fiufit.api.gateway/cmd/middleware"
 	"fiufit.api.gateway/internal/auth"
 	"github.com/gin-gonic/gin"
-	"net/http"
-	"net/url"
+	gintrace "gopkg.in/DataDog/dd-trace-go.v1/contrib/gin-gonic/gin"
+	log "github.com/sirupsen/logrus"
 )
 
 type RouterConfig func(*gin.Engine)
@@ -24,11 +28,51 @@ func (g *Gateway) Run(addr ...string) {
 
 func New(configs ...RouterConfig) *Gateway {
 	router := gin.Default()
+	router.Use(gintrace.Middleware("service-external-gateway"))
 	router.Use(middleware.Cors())
+	router.Use(gintrace.Middleware("fiufit-api-gateway"))
 	for _, option := range configs {
 		option(router)
 	}
 	return &Gateway{router}
+}
+
+func LoggingMiddleware() gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		// Starting time request
+		startTime := time.Now()
+
+		// Processing request
+		ctx.Next()
+
+		// End Time request
+		endTime := time.Now()
+
+		// execution time
+		latencyTime := endTime.Sub(startTime)
+
+		// Request method
+		reqMethod := ctx.Request.Method
+
+		// Request route
+		reqUri := ctx.Request.RequestURI
+
+		// status code
+		statusCode := ctx.Writer.Status()
+
+		// Request IP
+		clientIP := ctx.ClientIP()
+
+		log.WithFields(log.Fields{
+			"METHOD":    reqMethod,
+			"URI":       reqUri,
+			"STATUS":    statusCode,
+			"LATENCY":   latencyTime,
+			"CLIENT_IP": clientIP,
+		}).Info("HTTP REQUEST")
+
+		ctx.Next()
+	}
 }
 
 // Sets the routes for the users endpoint
