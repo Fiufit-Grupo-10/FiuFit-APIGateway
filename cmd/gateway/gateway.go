@@ -109,6 +109,11 @@ func Users(url *url.URL, s auth.Service) RouterConfig {
 		router.GET("/users/:user_id/following", middleware.ReverseProxy(&*url))
 
 		router.GET("/trainingtypes", middleware.ReverseProxy(&*url))
+
+		router.GET("/certificates", middleware.ReverseProxy(&*url))
+		router.POST("/certificates/:user_id", middleware.ReverseProxy(&*url))
+		router.GET("/certificates/:user_id", middleware.ReverseProxy(&*url))
+		router.PUT("/certificates/:user_id/:id", middleware.ReverseProxy(&*url))
 	}
 }
 
