@@ -221,7 +221,7 @@ func Trainers(url *url.URL, s auth.Service) RouterConfig {
 			middleware.AbortIfNotAuthorized,
 			middleware.ReverseProxy(&*url))
 
-		router.DELETE("/users/:user_id}/trainings/favourites/:plan_id}",
+		router.DELETE("/users/:user_id/trainings/favourites/:plan_id",
 			middleware.AuthorizeUser(s),
 			middleware.AbortIfNotAuthorized,
 			middleware.ReverseProxy(&*url))
