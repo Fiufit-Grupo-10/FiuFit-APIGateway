@@ -8,8 +8,8 @@ import (
 	"fiufit.api.gateway/cmd/middleware"
 	"fiufit.api.gateway/internal/auth"
 	"github.com/gin-gonic/gin"
-	gintrace "gopkg.in/DataDog/dd-trace-go.v1/contrib/gin-gonic/gin"
 	log "github.com/sirupsen/logrus"
+	gintrace "gopkg.in/DataDog/dd-trace-go.v1/contrib/gin-gonic/gin"
 )
 
 type RouterConfig func(*gin.Engine)
@@ -209,6 +209,21 @@ func Trainers(url *url.URL, s auth.Service) RouterConfig {
 		// TODO: Verify trainer_id vs token
 		router.DELETE("/plans/:trainer_id/:plan_id",
 			middleware.AuthorizeUser(s),
+			middleware.ReverseProxy(&*url))
+
+		router.POST("/users/:user_id/trainings/favourites",
+			middleware.AuthorizeUser(s),
+			middleware.AbortIfNotAuthorized,
+			middleware.ReverseProxy(&*url))
+
+		router.GET("/users/:user_id/trainings/favourites",
+			middleware.AuthorizeUser(s),
+			middleware.AbortIfNotAuthorized,
+			middleware.ReverseProxy(&*url))
+
+		router.DELETE("/users/:user_id}/trainings/favourites/:plan_id}",
+			middleware.AuthorizeUser(s),
+			middleware.AbortIfNotAuthorized,
 			middleware.ReverseProxy(&*url))
 	}
 }
