@@ -1,4 +1,4 @@
-package main
+package config
 
 import (
 	"errors"
@@ -8,26 +8,26 @@ import (
 )
 
 const (
-	users = iota
-	trainings
-	metrics
-	goals
+	Users = iota
+	Trainings
+	Metrics
+	Goals
 )
 
 var enviromentVariables = map[int]string{
-	users:    "USERS_URL",
-	trainings: "TRAINERS_URL",
-	metrics:  "METRICS_URL",
-	goals:    "GOALS_URL",
+	Users:    "USERS_URL",
+	Trainings: "TRAINERS_URL",
+	Metrics:  "METRICS_URL",
+	Goals:    "GOALS_URL",
 }
 
-const serviceName = "service-external-gateway"
+const ServiceName = "service-external-gateway"
 
 type Config struct {
 	URLS map[int]*url.URL
 }
 
-func NewConfig() (*Config, error) {
+func New() (*Config, error) {
 	URLS := make(map[int]*url.URL)
 	for key, envVar := range enviromentVariables {
 		rawURL, found := os.LookupEnv(envVar)

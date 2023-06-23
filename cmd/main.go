@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 
+	"fiufit.api.gateway/cmd/config"
 	"fiufit.api.gateway/cmd/gateway"
 	"fiufit.api.gateway/internal/auth"
 
@@ -22,17 +23,17 @@ func main() {
 		log.Fatalf("Couldn't start firebase service: %s", err.Error())
 	}
 
-	config, err := NewConfig()
+	c, err := config.New()
 	if err != nil {
 		log.Fatalf("Couldn't start firebase service: %s", err.Error())
 	}
 
-	usersURL := config.URLS[users]
-	trainingsURL := config.URLS[trainings]
-	metricsURL := config.URLS[metrics]
-	goalsURL := config.URLS[goals]
+	usersURL := c.URLS[config.Users]
+	trainingsURL := c.URLS[config.Trainings]
+	metricsURL := c.URLS[config.Metrics]
+	goalsURL := c.URLS[config.Goals]
 
-	tracer.Start(tracer.WithService(serviceName))
+	tracer.Start(tracer.WithService(config.ServiceName))
 	defer tracer.Stop()
 
 	gateway := gateway.New(
