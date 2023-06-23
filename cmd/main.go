@@ -2,8 +2,6 @@ package main
 
 import (
 	"context"
-	"net/url"
-	"os"
 
 	"fiufit.api.gateway/cmd/gateway"
 	"fiufit.api.gateway/internal/auth"
@@ -18,71 +16,31 @@ func init() {
 }
 
 func main() {
-	log.Println("=====NUEVO======")
 	ctx := context.Background()
 	f, err := auth.GetFirebase(ctx)
 	if err != nil {
 		log.Fatalf("Couldn't start firebase service: %s", err.Error())
 	}
-	// Users
-	rawURL, found := os.LookupEnv("USERS_URL")
-	log.Printf("rawURL: %s", rawURL)
-	if !found || rawURL == "" {
-		log.Fatal("USERS_URL enviroment variable not found")
-	}
 
-	usersURL, err := url.Parse(rawURL)
+	config, err := NewConfig()
 	if err != nil {
-		log.Fatalf("Error parsing URL: %s", usersURL)
+		log.Fatalf("Couldn't start firebase service: %s", err.Error())
 	}
 
-	// Trainers
-	rawURL, found = os.LookupEnv("TRAINERS_URL")
-	log.Printf("rawURL: %s", rawURL)
-	if !found || rawURL == "" {
-		log.Fatal("USERS_URL enviroment variable not found")
-	}
+	usersURL := config.URLS[users]
+	trainingsURL := config.URLS[trainings]
+	metricsURL := config.URLS[metrics]
+	goalsURL := config.URLS[goals]
 
-	trainersURL, err := url.Parse(rawURL)
-	if err != nil {
-		log.Fatalf("Error parsing URL: %s", trainersURL)
-	}
-
-	// Metrics
-	rawURL, found = os.LookupEnv("METRICS_URL")
-	log.Printf("rawURL: %s", rawURL)
-	if !found || rawURL == "" {
-		log.Fatal("METRICS_URL enviroment variable not found")
-	}
-
-	metricsURL, err := url.Parse(rawURL)
-	if err != nil {
-		log.Fatalf("Error parsing URL: %s", metricsURL)
-	}
-
-	// Goals
-	rawURL, found = os.LookupEnv("GOALS_URL")
-	log.Printf("rawURL: %s", rawURL)
-	if !found || rawURL == "" {
-		log.Fatal("GOALS_URL enviroment variable not found")
-	}
-
-	goalsURL, err := url.Parse(rawURL)
-	if err != nil {
-		log.Fatalf("Error parsing URL: %s", goalsURL)
-	}
-
-	tracer.Start(tracer.WithService("service-external-gateway"))
-
+	tracer.Start(tracer.WithService(serviceName))
 	defer tracer.Stop()
 
 	gateway := gateway.New(
 		gateway.Users(usersURL, f),
-		gateway.Admin(usersURL, trainersURL, f),
-		gateway.Trainers(trainersURL, f),
-		gateway.Reviews(trainersURL, f),
-		gateway.Metrics(metricsURL, f),
+		gateway.Admin(usersURL, trainingsURL, metricsURL, f),
+		gateway.Trainings(trainingsURL, f),
+		gateway.Reviews(trainingsURL, f),
 		gateway.Goals(goalsURL, f))
-
+	
 	gateway.Run("0.0.0.0:8080")
 }

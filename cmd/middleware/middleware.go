@@ -3,15 +3,16 @@ package middleware
 import (
 	"bytes"
 	"encoding/json"
+	"fiufit.api.gateway/internal/auth"
+	"github.com/gin-gonic/gin"
+	log "github.com/sirupsen/logrus"
 	"io"
 	"net/http"
 	"net/http/httputil"
 	"net/url"
 	"path"
 	"strings"
-
-	"fiufit.api.gateway/internal/auth"
-	"github.com/gin-gonic/gin"
+	"time"
 )
 
 const uidKey string = "User-UID"
@@ -52,7 +53,7 @@ func ChangeBlockStatusFirebase(s auth.Service) gin.HandlerFunc {
 				return
 			}
 		}
-		
+
 		for _, user := range users {
 			// Shouldn't fail
 			err = s.SetBlockStatus(user.UID, user.Blocked)
@@ -298,5 +299,49 @@ func AbortIfNotAuthorized(ctx *gin.Context) {
 
 	if !authorized {
 		ctx.AbortWithStatus(http.StatusUnauthorized)
+	}
+}
+
+func Logger() gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		// Starting time request
+		startTime := time.Now()
+
+		// Processing request
+		ctx.Next()
+
+		// End Time request
+		endTime := time.Now()
+
+		// execution time
+		latencyTime := endTime.Sub(startTime)
+
+		// Request method
+		requestMethod := ctx.Request.Method
+
+		// Request route
+		requestURI := ctx.Request.RequestURI
+
+		// status code
+		statusCode := ctx.Writer.Status()
+
+		// Request IP
+		clientIP := ctx.ClientIP()
+
+		// Request query params
+		requestQueryParams := ctx.Request.URL.Query()
+
+		requestHeaders := ctx.Request.Header
+
+		log.WithFields(log.Fields{
+			"method":       requestMethod,
+			"uri":          requestURI,
+			"status":       statusCode,
+			"headers":      requestHeaders,
+			"query_params": requestQueryParams,
+			"latency":      latencyTime,
+			"client_ip":    clientIP,
+		}).Info("HTTP Request")
+
 	}
 }
