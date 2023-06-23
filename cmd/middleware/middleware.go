@@ -328,17 +328,10 @@ func Logger() gin.HandlerFunc {
 		// Request IP
 		clientIP := ctx.ClientIP()
 
-		// Request query params
-		requestQueryParams := ctx.Request.URL.Query()
-
-		requestHeaders := ctx.Request.Header
-
 		log.WithFields(log.Fields{
 			"method":       requestMethod,
 			"uri":          requestURI,
 			"status":       statusCode,
-			"headers":      requestHeaders,
-			"query_params": requestQueryParams,
 			"latency":      latencyTime,
 			"client_ip":    clientIP,
 		}).Info("HTTP Request")
