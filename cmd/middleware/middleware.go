@@ -103,11 +103,20 @@ func AuthorizeUser(s auth.Service) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		token := c.Request.Header.Get("Authorization")
 		uid, err := s.VerifyToken(token)
+		logContext := log.Fields{
+			"method":    c.Request.Method,
+			"client_ip": c.ClientIP(),
+			"uri":       c.Request.RequestURI,
+		}
+		
 		if err != nil {
+			logContext["error"] = err.Error()
+			log.WithFields(logContext).Info("Firebase Authorization failed")
 			c.Set(authorizedKey, false)
 			return
 		}
 		// Magic value const
+		log.WithFields(logContext).Info("Firebase Authorization done")
 		c.Set(uidKey, uid)
 		c.Set(authorizedKey, true)
 	}
@@ -115,8 +124,15 @@ func AuthorizeUser(s auth.Service) gin.HandlerFunc {
 
 func AuthorizeAdmin(url *url.URL) gin.HandlerFunc {
 	return func(c *gin.Context) {
+		logContext := log.Fields{
+			"method":    c.Request.Method,
+			"client_ip": c.ClientIP(),
+			"uri":       c.Request.RequestURI,
+		}
 		UID, ok := getUID(c)
 		if !ok {
+			logContext["error"] = "UID not set in context"
+			log.WithFields(logContext).Error("Admin authentication failed")
 			c.AbortWithStatus(http.StatusInternalServerError)
 			return
 		}
@@ -134,11 +150,14 @@ func AuthorizeAdmin(url *url.URL) gin.HandlerFunc {
 
 		ok = <-resultChannel
 		if !ok {
+			logContext["error"] = "Not an admin"
+			log.WithFields(logContext).Info("Admin authentication failed")
 			c.AbortWithStatus(http.StatusUnauthorized)
 			return
 		}
 	}
 }
+
 func AddUIDToRequestURL() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		UID, ok := getUID(c)
@@ -329,11 +348,11 @@ func Logger() gin.HandlerFunc {
 		clientIP := ctx.ClientIP()
 
 		log.WithFields(log.Fields{
-			"method":       requestMethod,
-			"uri":          requestURI,
-			"status":       statusCode,
-			"latency":      latencyTime,
-			"client_ip":    clientIP,
+			"method":    requestMethod,
+			"uri":       requestURI,
+			"status":    statusCode,
+			"latency":   latencyTime,
+			"client_ip": clientIP,
 		}).Info("HTTP Request")
 
 	}
