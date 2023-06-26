@@ -3,9 +3,6 @@ package middleware
 import (
 	"bytes"
 	"encoding/json"
-	"fiufit.api.gateway/internal/auth"
-	"github.com/gin-gonic/gin"
-	log "github.com/sirupsen/logrus"
 	"io"
 	"net/http"
 	"net/http/httputil"
@@ -13,6 +10,10 @@ import (
 	"path"
 	"strings"
 	"time"
+
+	"fiufit.api.gateway/internal/auth"
+	"github.com/gin-gonic/gin"
+	log "github.com/sirupsen/logrus"
 )
 
 const uidKey string = "User-UID"
@@ -94,6 +95,11 @@ func IsAuthorized(ctx *gin.Context) bool {
 func ReverseProxy(url *url.URL) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		proxy := httputil.NewSingleHostReverseProxy(url)
+		client_ip := c.ClientIP()
+		proxy.ErrorHandler = func(rw http.ResponseWriter, r *http.Request, e error) {
+			log.WithFields(log.Fields{"uri": r.RequestURI, "client_ip": client_ip, "error": e.Error()}).Info("Reverse proxy failed")
+			rw.WriteHeader(http.StatusBadGateway)
+		}
 		c.Request.Host = url.Host
 		proxy.ServeHTTP(c.Writer, c.Request)
 	}
@@ -108,14 +114,15 @@ func AuthorizeUser(s auth.Service) gin.HandlerFunc {
 			"client_ip": c.ClientIP(),
 			"uri":       c.Request.RequestURI,
 		}
-		
+
 		if err != nil {
+			logContext["authorized"] = true;
 			logContext["error"] = err.Error()
 			log.WithFields(logContext).Info("Firebase Authorization failed")
 			c.Set(authorizedKey, false)
 			return
 		}
-		// Magic value const
+		logContext["authorized"] = true;
 		log.WithFields(logContext).Info("Firebase Authorization done")
 		c.Set(uidKey, uid)
 		c.Set(authorizedKey, true)
@@ -124,15 +131,10 @@ func AuthorizeUser(s auth.Service) gin.HandlerFunc {
 
 func AuthorizeAdmin(url *url.URL) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		logContext := log.Fields{
-			"method":    c.Request.Method,
-			"client_ip": c.ClientIP(),
-			"uri":       c.Request.RequestURI,
-		}
+
 		UID, ok := getUID(c)
 		if !ok {
-			logContext["error"] = "UID not set in context"
-			log.WithFields(logContext).Error("Admin authentication failed")
+			log.WithFields(log.Fields{"error": "UID not set in context"}).Error("Admin authentication failed")
 			c.AbortWithStatus(http.StatusInternalServerError)
 			return
 		}
@@ -150,8 +152,7 @@ func AuthorizeAdmin(url *url.URL) gin.HandlerFunc {
 
 		ok = <-resultChannel
 		if !ok {
-			logContext["error"] = "Not an admin"
-			log.WithFields(logContext).Info("Admin authentication failed")
+			log.WithFields(log.Fields{"error": "Not an admin"}).Info("Admin authentication failed")
 			c.AbortWithStatus(http.StatusUnauthorized)
 			return
 		}

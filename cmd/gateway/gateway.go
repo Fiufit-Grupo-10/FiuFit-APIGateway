@@ -168,13 +168,22 @@ func Admin(usersUrl *url.URL, trainersURL *url.URL, metricsURL *url.URL, s auth.
 			middleware.AbortIfNotAuthorized,
 			middleware.RemovePathFromRequestURL("/admins"),
 			middleware.ReverseProxy(&*metricsURL))
+
 		router.GET("/admins/metrics",
 			middleware.AuthorizeUser(s),
 			middleware.AbortIfNotAuthorized,
 			middleware.AuthorizeAdmin(&*usersUrl),
 			middleware.RemovePathFromRequestURL("/admins"),
 			middleware.ReverseProxy(&*metricsURL))
+
 		router.GET("/admins/metrics/totals",
+			middleware.AuthorizeUser(s),
+			middleware.AbortIfNotAuthorized,
+			middleware.AuthorizeAdmin(&*usersUrl),
+			middleware.RemovePathFromRequestURL("/admins"),
+			middleware.ReverseProxy(&*metricsURL))
+
+		router.GET("/admins/metrics/locations",
 			middleware.AuthorizeUser(s),
 			middleware.AbortIfNotAuthorized,
 			middleware.AuthorizeAdmin(&*usersUrl),
@@ -182,6 +191,7 @@ func Admin(usersUrl *url.URL, trainersURL *url.URL, metricsURL *url.URL, s auth.
 			middleware.ReverseProxy(&*metricsURL))
 	}
 }
+
 
 func Trainings(url *url.URL, s auth.Service) RouterConfig {
 	return func(router *gin.Engine) {
