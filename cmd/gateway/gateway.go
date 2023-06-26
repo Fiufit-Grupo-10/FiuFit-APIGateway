@@ -96,6 +96,11 @@ func Users(url *url.URL, s auth.Service) RouterConfig {
 			middleware.AbortIfNotAuthorized,
 			middleware.ReverseProxy(&*url))
 
+		router.GET("/users/:user_id/trainers",
+			middleware.AuthorizeUser(s),
+			middleware.AbortIfNotAuthorized,
+			middleware.ReverseProxy(&*url))
+
 	}
 }
 
@@ -192,12 +197,10 @@ func Admin(usersUrl *url.URL, trainersURL *url.URL, metricsURL *url.URL, s auth.
 	}
 }
 
-
 func Trainings(url *url.URL, s auth.Service) RouterConfig {
 	return func(router *gin.Engine) {
 		router.POST("/plans",
 			middleware.AuthorizeUser(s),
-			// Verify that the user is indeed a trainer
 			middleware.AbortIfNotAuthorized,
 			middleware.ReverseProxy(&*url))
 
