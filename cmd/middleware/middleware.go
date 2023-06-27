@@ -26,16 +26,6 @@ type BlockModel struct {
 	Blocked bool   `json:"blocked"`
 }
 
-func ExecuteIf(guard func(*gin.Context) bool, a, b gin.HandlerFunc) gin.HandlerFunc {
-	return func(ctx *gin.Context) {
-		if guard(ctx) {
-			a(ctx)
-			return
-		}
-		b(ctx)
-	}
-}
-
 func ChangeBlockStatusFirebase(s auth.Service) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		// Conseguir uid y blocked,
@@ -116,13 +106,13 @@ func AuthorizeUser(s auth.Service) gin.HandlerFunc {
 		}
 
 		if err != nil {
-			logContext["authorized"] = true;
+			logContext["authorized"] = true
 			logContext["error"] = err.Error()
 			log.WithFields(logContext).Info("Firebase Authorization failed")
 			c.Set(authorizedKey, false)
 			return
 		}
-		logContext["authorized"] = true;
+		logContext["authorized"] = true
 		log.WithFields(logContext).Info("Firebase Authorization done")
 		c.Set(uidKey, uid)
 		c.Set(authorizedKey, true)
@@ -208,6 +198,7 @@ func CreateUser(s auth.Service) gin.HandlerFunc {
 		// FIX: Doesn't check that all fields are present
 		err := c.ShouldBindJSON(&signUpData)
 		if err != nil {
+			log.WithFields(log.Fields{"error": err.Error()}).Info("couldn't bind to json request to sign up user")
 			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
 		}
@@ -219,22 +210,26 @@ func CreateUser(s auth.Service) gin.HandlerFunc {
 			userData, err = s.CreateUser(signUpData)
 		}
 
+		log.WithFields(log.Fields{"user": userData}).Info("Creating user in firebase")
 		if err != nil {
+			log.WithFields(log.Fields{"user": userData}).Info("Failed to create user in firebase")
 			c.AbortWithStatusJSON(http.StatusConflict, gin.H{"error": err.Error()})
 			return
 		}
-
 		// Should never fail unless the userData
 		// representation becomes an unsupported type
 		userDataJSON, err := json.Marshal(userData)
 		if err != nil {
 			// Delete user from firebase
+			log.WithFields(log.Fields{"data": userData, "error": err.Error()}).Error("couldn't marshall data to json ")
 			c.AbortWithStatus(http.StatusInternalServerError)
 			return
 		}
+		log.WithFields(log.Fields{"user": string(userDataJSON)}).Info("initialized user in users service")
 		req, err := http.NewRequest(http.MethodPost, "/users", bytes.NewBuffer(userDataJSON))
 		if err != nil {
 			// delete user from firebase
+			log.WithFields(log.Fields{"error": err.Error(), "user": string(userDataJSON)}).Error("couldn't reach users service")
 			c.AbortWithStatus(http.StatusInternalServerError)
 			return
 		}
@@ -252,12 +247,15 @@ func CreateAdmin(s auth.Service) gin.HandlerFunc {
 		// FIX: Doesn't check that all fields are present
 		err := c.ShouldBindJSON(&signUpData)
 		if err != nil {
+			log.WithFields(log.Fields{"error": err.Error()}).Info("couldn't bind to json request to sign up admin")
 			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
 		}
 
 		userData, err := s.CreateUser(signUpData)
+		log.WithFields(log.Fields{"admin": userData}).Info("Creating admin in firebase")
 		if err != nil {
+			log.WithFields(log.Fields{"user": userData}).Info("Failed to create admin in firebase")
 			c.AbortWithStatusJSON(http.StatusConflict, gin.H{"error": err.Error()})
 			return
 		}
@@ -266,11 +264,14 @@ func CreateAdmin(s auth.Service) gin.HandlerFunc {
 		// representation becomes an unsupported type
 		userDataJSON, err := json.Marshal(userData)
 		if err != nil {
+			log.WithFields(log.Fields{"data": userData, "error": err.Error()}).Error("couldn't marshall data to json ")
 			c.AbortWithStatus(http.StatusInternalServerError)
 			return
 		}
+		log.WithFields(log.Fields{"admin": string(userDataJSON)}).Info("initialized admin in users service")
 		req, err := http.NewRequest(http.MethodPost, "/admins", bytes.NewBuffer(userDataJSON))
 		if err != nil {
+			log.WithFields(log.Fields{"error": err.Error(), "user": string(userDataJSON)}).Error("couldn't reach users service")
 			c.AbortWithStatus(http.StatusInternalServerError)
 			return
 		}

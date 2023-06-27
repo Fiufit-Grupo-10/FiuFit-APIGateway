@@ -391,65 +391,6 @@ func TestRemovePathFromRequestURL(t *testing.T) {
 	})
 }
 
-func TestExecuteIf(t *testing.T) {
-	gin.SetMode(gin.TestMode)
-	t.Run("Execute the first middleware if the guard returns true", func(t *testing.T) {
-		w := CreateTestResponseRecorder()
-		c, _ := gin.CreateTestContext(w)
-		req, _ := http.NewRequest(http.MethodGet, "/test", nil)
-		c.Request = req
-
-		guard := func(c *gin.Context) bool {
-			return true
-		}
-
-		first := func(c *gin.Context) {
-			c.Set("key", "first")
-		}
-
-		second := func(c *gin.Context) {
-			c.Set("key", "second")
-		}
-
-		ExecuteIf(guard, first, second)(c)
-		anyKey, found := c.Get("key")
-		if !found {
-			t.Errorf("Key %s wasn't found", "key")
-			return
-		}
-		key, _ := anyKey.(string)
-		assert_eq(t, key, "first")
-
-	})
-
-	t.Run("Execute the second middleware if the guard returns false", func(t *testing.T) {
-		w := CreateTestResponseRecorder()
-		c, _ := gin.CreateTestContext(w)
-		req, _ := http.NewRequest(http.MethodGet, "/test", nil)
-		c.Request = req
-
-		guard := func(c *gin.Context) bool {
-			return false
-		}
-
-		first := func(c *gin.Context) {
-			c.Set("key", "first")
-		}
-
-		second := func(c *gin.Context) {
-			c.Set("key", "second")
-		}
-
-		ExecuteIf(guard, first, second)(c)
-		anyKey, found := c.Get("key")
-		if !found {
-			t.Errorf("Key %s wasn't found", "key")
-			return
-		}
-		key, _ := anyKey.(string)
-		assert_eq(t, key, "second")
-	})
-}
 
 func TestBlockUsersInAuthService(t *testing.T) {
 	gin.SetMode(gin.TestMode)
