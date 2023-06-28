@@ -145,8 +145,9 @@ func TestGateway(t *testing.T) {
 
 		usersServiceURL, _ := url.Parse(usersService.URL)
 		trainersServiceURL, _ := url.Parse("")
+		metricsServiceURL, _ := url.Parse("")
 		s := AuthTestService{}
-		gateway := New(Admin(usersServiceURL, trainersServiceURL, s))
+		gateway := New(Admin(usersServiceURL, trainersServiceURL, metricsServiceURL, s))
 
 		signUpData := auth.SignUpModel{
 			Email: "abc@xyz.com", Username: "abc", Password: "123",
@@ -168,10 +169,10 @@ func TestGateway(t *testing.T) {
 		defer usersService.Close()
 
 		usersServiceURL, _ := url.Parse(usersService.URL)
-		s := AuthTestService{}
 		trainersServiceURL, _ := url.Parse("")
-		gateway := New(Admin(usersServiceURL, trainersServiceURL, s))
-
+		metricsServiceURL, _ := url.Parse("")
+		s := AuthTestService{}
+		gateway := New(Admin(usersServiceURL, trainersServiceURL, metricsServiceURL, s))
 		signUpData := auth.SignUpModel{
 			Email: "abc@xyz.com", Username: "abc", Password: "123",
 		}
@@ -198,9 +199,10 @@ func TestGateway(t *testing.T) {
 		defer usersService.Close()
 
 		usersServiceURL, _ := url.Parse(usersService.URL)
-		s := AuthTestService{}
 		trainersServiceURL, _ := url.Parse("")
-		gateway := New(Admin(usersServiceURL, trainersServiceURL, s))
+		metricsServiceURL, _ := url.Parse("")
+		s := AuthTestService{}
+		gateway := New(Admin(usersServiceURL, trainersServiceURL, metricsServiceURL, s))
 		w := CreateTestResponseRecorder()
 		req, _ := http.NewRequest(http.MethodGet, "/admins/users", nil)
 		req.Header.Set("Authorization", "abc")
