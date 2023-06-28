@@ -54,35 +54,3 @@ jobs:
           token: ${{secrets.CODECOV_TOKEN}}  # set in repository settings
           file: ./coverage.txt  # file from the previous step
           fail_ci_if_error: false
-    
-  docker-image:
-    runs-on: ubuntu-latest
-    needs: [tests]
-    steps:
-      - uses: actions/checkout@v3
-    
-      - name: Create firebase token file      
-        run: |
-          echo "${FIREBASE}" >> firebase.json
-        shell: bash
-        env:
-          FIREBASE: ${{ secrets.FIREBASE }}
-   
-      - name: Login to Docker Hub
-        uses: docker/login-action@v1
-        with:
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
-
-      - name: Set up Docker Buildx
-        id: buildx
-        uses: docker/setup-buildx-action@v1
-
-      - name: Build and push        
-        id: docker_build
-        uses: docker/build-push-action@v2
-        with:
-          context: .
-          platforms: linux/amd64
-          push: true
-          tags: ${{ secrets.DOCKER_USERNAME }}/fiufit-api-gateway:latest
