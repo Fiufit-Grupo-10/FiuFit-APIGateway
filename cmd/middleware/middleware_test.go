@@ -30,7 +30,7 @@ func TestMain(m *testing.M) {
 
 func TestAuthorize(t *testing.T) {
 	gin.SetMode(gin.TestMode)
-	t.Run("Authorize request correctly, the next middlware can extract the UID and verify that the user is authorized, Mustn't abort", func(t *testing.T) {
+	t.Run("Authorize request correctly, the next middleware executes and can extract the UID", func(t *testing.T) {
 		s := &AuthTestService{}
 		w := CreateTestResponseRecorder()
 		c, _ := gin.CreateTestContext(w)
@@ -45,20 +45,14 @@ func TestAuthorize(t *testing.T) {
 			t.Errorf("Key %s wasn't found", "User-UID")
 			return
 		}
+		
 		UID, _ := anyUID.(string)
 		assert_eq(t, UID, "123")
-
-		anyAuthorized, found := c.Get("Authorized")
-		if !found {
-			t.Errorf("Key %s wasn't found", "Authorized")
-		}
-		authorized, _ := anyAuthorized.(bool)
-		assert_eq(t, authorized, true)
 
 		assert_eq(t, c.IsAborted(), false)
 	})
 
-	t.Run("Authorization of request fails, the UID isn't set and the next middleware can verify that the user is unauthorized . Mustn't abort", func(t *testing.T) {
+	t.Run("Authorization of request fails, the UID isn't set. Aborts", func(t *testing.T) {
 		s := &AuthTestService{}
 		w := CreateTestResponseRecorder()
 		c, _ := gin.CreateTestContext(w)
@@ -69,16 +63,11 @@ func TestAuthorize(t *testing.T) {
 
 		_, found := c.Get("User-UID")
 		if found {
-			t.Errorf("Key %s was found", "User-UID")
+			t.Errorf("Key %s should't exist found", "User-UID")
 		}
-
-		anyAuthorized, found := c.Get("Authorized")
-		if !found {
-			t.Errorf("Key %s wasn't found", "Authorized")
-		}
-		authorized, _ := anyAuthorized.(bool)
-		assert_eq(t, authorized, false)
-		assert_eq(t, c.IsAborted(), false)
+		
+		assert_eq(t, c.Writer.Status(), http.StatusUnauthorized)
+		assert_eq(t, c.IsAborted(), true)
 	})
 }
 
@@ -461,43 +450,6 @@ func TestBlockUsersInAuthService(t *testing.T) {
 		assert_eq(t, s.SetBlockStatusCalls, 0)
 		assert_eq(t, c.Writer.Status(), http.StatusNotFound)
 	})
-}
-
-func TestIsAuthorized(t *testing.T) {
-	gin.SetMode(gin.TestMode)
-	t.Run("The key is set and the user is authorized, mustn't abort", func(t *testing.T) {
-		w := CreateTestResponseRecorder()
-		c, _ := gin.CreateTestContext(w)
-		c.Set(authorizedKey, true)
-		got := IsAuthorized(c)
-		assert_eq(t, got, true)
-		assert_eq(t, c.IsAborted(), false)
-	})
-
-	t.Run("The key is set and the user isn't authorized, mustn't abort", func(t *testing.T) {
-		w := CreateTestResponseRecorder()
-		c, _ := gin.CreateTestContext(w)
-		c.Set(authorizedKey, false)
-		got := IsAuthorized(c)
-		assert_eq(t, got, false)
-		assert_eq(t, c.IsAborted(), false)
-	})
-
-	t.Run("The key isnt set , must abort", func(t *testing.T) {
-		w := CreateTestResponseRecorder()
-		c, _ := gin.CreateTestContext(w)
-		IsAuthorized(c)
-		assert_eq(t, c.IsAborted(), true)
-	})
-
-	t.Run("The key isn't a boolean, must abort", func(t *testing.T) {
-		w := CreateTestResponseRecorder()
-		c, _ := gin.CreateTestContext(w)
-		c.Set(authorizedKey, "not a bool")
-		got := IsAuthorized(c)
-		assert_eq(t, got, false)
-		assert_eq(t, c.IsAborted(), true)
-	}) 
 }
 
 // The types below are necessary for tests to run Gin requires that

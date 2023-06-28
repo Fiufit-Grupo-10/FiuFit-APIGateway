@@ -72,16 +72,6 @@ func SetQuery(key, value string) gin.HandlerFunc {
 	}
 }
 
-func IsAuthorized(ctx *gin.Context) bool {
-	authorized, found := getAuthorized(ctx)
-	// This shouldn't fail, unless it was called incorrectly
-	if !found {
-		ctx.AbortWithStatus(http.StatusInternalServerError)
-		return false
-	}
-	return authorized
-}
-
 func ReverseProxy(url *url.URL) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		proxy := httputil.NewSingleHostReverseProxy(url)
@@ -109,13 +99,12 @@ func AuthorizeUser(s auth.Service) gin.HandlerFunc {
 			logContext["authorized"] = true
 			logContext["error"] = err.Error()
 			log.WithFields(logContext).Info("Firebase Authorization failed")
-			c.Set(authorizedKey, false)
+			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
 			return
 		}
 		logContext["authorized"] = true
 		log.WithFields(logContext).Info("Firebase Authorization done")
 		c.Set(uidKey, uid)
-		c.Set(authorizedKey, true)
 	}
 }
 
@@ -175,20 +164,6 @@ func getUID(c *gin.Context) (string, bool) {
 	return UID, true
 }
 
-func getAuthorized(c *gin.Context) (bool, bool) {
-	anyAuthorized, found := c.Get(authorizedKey)
-	if !found {
-		return false, found
-	}
-	authorized, ok := anyAuthorized.(bool)
-	// Should never fail, dev error
-	if !ok {
-		return false, ok
-	}
-
-	return authorized, true
-}
-
 // Returns the handler charged with creating an user. It takes the URL
 // of the users service and an auth Service as argument.
 // TODO: Delete user
@@ -198,7 +173,7 @@ func CreateUser(s auth.Service) gin.HandlerFunc {
 		// FIX: Doesn't check that all fields are present
 		err := c.ShouldBindJSON(&signUpData)
 		if err != nil {
-			log.WithFields(log.Fields{"error": err.Error()}).Info("couldn't bind to json request to sign up user")
+			log.WithFields(log.Fields{"error": err.Error()}).Info("couldn't bind to json sign up form")
 			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
 		}
@@ -247,7 +222,7 @@ func CreateAdmin(s auth.Service) gin.HandlerFunc {
 		// FIX: Doesn't check that all fields are present
 		err := c.ShouldBindJSON(&signUpData)
 		if err != nil {
-			log.WithFields(log.Fields{"error": err.Error()}).Info("couldn't bind to json request to sign up admin")
+			log.WithFields(log.Fields{"error": err.Error()}).Info("couldn't bind to json sign up form")
 			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
 		}
@@ -310,18 +285,6 @@ func RemovePathFromRequestURL(path string) gin.HandlerFunc {
 	}
 }
 
-func AbortIfNotAuthorized(ctx *gin.Context) {
-	authorized, found := getAuthorized(ctx)
-	//should never fail dev error
-	if !found {
-		ctx.AbortWithStatus(http.StatusInternalServerError)
-		return
-	}
-
-	if !authorized {
-		ctx.AbortWithStatus(http.StatusUnauthorized)
-	}
-}
 
 func Logger() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
