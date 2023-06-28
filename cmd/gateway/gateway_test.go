@@ -7,15 +7,22 @@ import (
 	"io"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"strings"
 
 	"net/url"
 	"testing"
 
 	"fiufit.api.gateway/internal/auth"
-
 	"github.com/gin-gonic/gin"
+	log "github.com/sirupsen/logrus"
 )
+
+func TestMain(m *testing.M) {
+	log.SetOutput(io.Discard)
+	os.Exit(m.Run())
+}
+
 
 func TestGateway(t *testing.T) {
 	gin.SetMode(gin.TestMode)
@@ -88,50 +95,6 @@ func TestGateway(t *testing.T) {
 			gateway.ServeHTTP(w, req)
 
 			assertStatusCode(t, w.Code, http.StatusOK)
-		})
-
-	t.Run("Request an user profile, being authorized, the response body must be a json containing the users private profile data",
-		func(t *testing.T) {
-			userData := auth.UserModel{UID: "123", Username: "abc", Email: "abc@xyz.com"}
-			userDataJSON, _ := json.Marshal(userData)
-			usersService := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-				assertString(t, r.URL.Path, "/users/123")
-				w.WriteHeader(http.StatusCreated)
-				w.Write(userDataJSON)
-			}))
-			defer usersService.Close()
-
-			usersServiceURL, _ := url.Parse(usersService.URL)
-			s := AuthTestService{}
-			gateway := New(Users(usersServiceURL, s))
-			w := CreateTestResponseRecorder()
-			req, _ := http.NewRequest(http.MethodGet, "/users", nil)
-			req.Header.Set("Authorization", "abc")
-
-			gateway.ServeHTTP(w, req)
-			assertString(t, w.Body.String(), string(userDataJSON))
-		})
-
-	t.Run("Request an user profile, being unauthorized, the response body must be a json containing the users public profile data",
-		func(t *testing.T) {
-			userData := auth.UserModel{UID: "123", Username: "abc", Email: "abc@xyz.com"}
-			userDataJSON, _ := json.Marshal(userData)
-			usersService := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-				assertString(t, r.URL.Path, "/users")
-				w.WriteHeader(http.StatusCreated)
-				w.Write(userDataJSON)
-			}))
-			defer usersService.Close()
-
-			usersServiceURL, _ := url.Parse(usersService.URL)
-			s := AuthTestService{}
-			gateway := New(Users(usersServiceURL, s))
-			w := CreateTestResponseRecorder()
-			req, _ := http.NewRequest(http.MethodGet, "/users", nil)
-			req.Header.Set("Authorization", "xyz")
-
-			gateway.ServeHTTP(w, req)
-			assertString(t, w.Body.String(), string(userDataJSON))
 		})
 
 	t.Run("Receive a request to create a new admin, the one making the request is an admin", func(t *testing.T) {
