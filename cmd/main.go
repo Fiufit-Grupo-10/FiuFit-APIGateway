@@ -38,7 +38,8 @@ func main() {
 		gateway.Admin(usersURL, trainingsURL, metricsURL, f),
 		gateway.Trainings(trainingsURL, f),
 		gateway.Reviews(trainingsURL, f),
-		gateway.Goals(goalsURL, f))
+		gateway.Goals(goalsURL, f),
+		gateway.Metrics(metricsURL, f))
 
 	gateway.Run("0.0.0.0:8080")
 }

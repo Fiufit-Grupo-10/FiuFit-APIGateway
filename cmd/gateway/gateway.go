@@ -311,3 +311,13 @@ func Goals(url *url.URL, s auth.Service) RouterConfig {
 			middleware.ReverseProxy(*&url))
 	}
 }
+
+func Metrics(url *url.URL, s auth.Service) RouterConfig {
+	return func(router *gin.Engine) {
+		router.GET("/metrics/trainings/:plan_id",
+			middleware.AuthorizeUser(s),
+			// Verify that is the same
+			middleware.AbortIfNotAuthorized,
+			middleware.ReverseProxy(*&url))
+	}
+}
