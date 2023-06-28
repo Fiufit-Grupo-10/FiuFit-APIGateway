@@ -8,10 +8,12 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"net/url"
+	"os"
 	"testing"
 
 	"fiufit.api.gateway/internal/auth"
 	"github.com/gin-gonic/gin"
+	log "github.com/sirupsen/logrus"
 )
 
 func assert_eq[T comparable](t testing.TB, got, want T) {
@@ -19,6 +21,11 @@ func assert_eq[T comparable](t testing.TB, got, want T) {
 	if got != want {
 		t.Errorf("Got %v, want %v", got, want)
 	}
+}
+
+func TestMain(m *testing.M) {
+	log.SetOutput(io.Discard)
+	os.Exit(m.Run())
 }
 
 func TestAuthorize(t *testing.T) {
@@ -482,6 +489,15 @@ func TestIsAuthorized(t *testing.T) {
 		IsAuthorized(c)
 		assert_eq(t, c.IsAborted(), true)
 	})
+
+	t.Run("The key isn't a boolean, must abort", func(t *testing.T) {
+		w := CreateTestResponseRecorder()
+		c, _ := gin.CreateTestContext(w)
+		c.Set(authorizedKey, "not a bool")
+		got := IsAuthorized(c)
+		assert_eq(t, got, false)
+		assert_eq(t, c.IsAborted(), true)
+	}) 
 }
 
 // The types below are necessary for tests to run Gin requires that
