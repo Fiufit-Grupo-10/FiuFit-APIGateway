@@ -265,6 +265,10 @@ func Reviews(url *url.URL, s auth.Service) RouterConfig {
 			middleware.ReverseProxy(&*url))
 
 		router.GET("/reviews/:plan_id/mean", middleware.ReverseProxy(&*url))
+		router.PUT("/reviews/:review_id",
+			middleware.AuthorizeUser(s),
+			middleware.AbortIfNotAuthorized,
+			middleware.ReverseProxy(&*url))
 	}
 }
 
