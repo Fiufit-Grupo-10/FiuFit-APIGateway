@@ -9,9 +9,11 @@ import (
 	"net/url"
 	"path"
 	"strings"
+	"time"
 
 	"fiufit.api.gateway/internal/auth"
 	"github.com/gin-gonic/gin"
+	log "github.com/sirupsen/logrus"
 )
 
 const uidKey string = "User-UID"
@@ -22,16 +24,6 @@ const allowedMethods string = "POST, GET, PUT, DELETE, OPTIONS, PATCH"
 type BlockModel struct {
 	UID     string `json:"uid"`
 	Blocked bool   `json:"blocked"`
-}
-
-func ExecuteIf(guard func(*gin.Context) bool, a, b gin.HandlerFunc) gin.HandlerFunc {
-	return func(ctx *gin.Context) {
-		if guard(ctx) {
-			a(ctx)
-			return
-		}
-		b(ctx)
-	}
 }
 
 func ChangeBlockStatusFirebase(s auth.Service) gin.HandlerFunc {
@@ -52,7 +44,7 @@ func ChangeBlockStatusFirebase(s auth.Service) gin.HandlerFunc {
 				return
 			}
 		}
-		
+
 		for _, user := range users {
 			// Shouldn't fail
 			err = s.SetBlockStatus(user.UID, user.Blocked)
@@ -93,6 +85,11 @@ func IsAuthorized(ctx *gin.Context) bool {
 func ReverseProxy(url *url.URL) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		proxy := httputil.NewSingleHostReverseProxy(url)
+		client_ip := c.ClientIP()
+		proxy.ErrorHandler = func(rw http.ResponseWriter, r *http.Request, e error) {
+			log.WithFields(log.Fields{"uri": r.RequestURI, "client_ip": client_ip, "error": e.Error()}).Info("Reverse proxy failed")
+			rw.WriteHeader(http.StatusBadGateway)
+		}
 		c.Request.Host = url.Host
 		proxy.ServeHTTP(c.Writer, c.Request)
 	}
@@ -102,11 +99,21 @@ func AuthorizeUser(s auth.Service) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		token := c.Request.Header.Get("Authorization")
 		uid, err := s.VerifyToken(token)
+		logContext := log.Fields{
+			"method":    c.Request.Method,
+			"client_ip": c.ClientIP(),
+			"uri":       c.Request.RequestURI,
+		}
+
 		if err != nil {
+			logContext["authorized"] = true
+			logContext["error"] = err.Error()
+			log.WithFields(logContext).Info("Firebase Authorization failed")
 			c.Set(authorizedKey, false)
 			return
 		}
-		// Magic value const
+		logContext["authorized"] = true
+		log.WithFields(logContext).Info("Firebase Authorization done")
 		c.Set(uidKey, uid)
 		c.Set(authorizedKey, true)
 	}
@@ -114,8 +121,10 @@ func AuthorizeUser(s auth.Service) gin.HandlerFunc {
 
 func AuthorizeAdmin(url *url.URL) gin.HandlerFunc {
 	return func(c *gin.Context) {
+
 		UID, ok := getUID(c)
 		if !ok {
+			log.WithFields(log.Fields{"error": "UID not set in context"}).Error("Admin authentication failed")
 			c.AbortWithStatus(http.StatusInternalServerError)
 			return
 		}
@@ -133,11 +142,13 @@ func AuthorizeAdmin(url *url.URL) gin.HandlerFunc {
 
 		ok = <-resultChannel
 		if !ok {
+			log.WithFields(log.Fields{"error": "Not an admin"}).Info("Admin authentication failed")
 			c.AbortWithStatus(http.StatusUnauthorized)
 			return
 		}
 	}
 }
+
 func AddUIDToRequestURL() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		UID, ok := getUID(c)
@@ -187,6 +198,7 @@ func CreateUser(s auth.Service) gin.HandlerFunc {
 		// FIX: Doesn't check that all fields are present
 		err := c.ShouldBindJSON(&signUpData)
 		if err != nil {
+			log.WithFields(log.Fields{"error": err.Error()}).Info("couldn't bind to json request to sign up user")
 			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
 		}
@@ -198,22 +210,26 @@ func CreateUser(s auth.Service) gin.HandlerFunc {
 			userData, err = s.CreateUser(signUpData)
 		}
 
+		log.WithFields(log.Fields{"user": userData}).Info("Creating user in firebase")
 		if err != nil {
+			log.WithFields(log.Fields{"user": userData}).Info("Failed to create user in firebase")
 			c.AbortWithStatusJSON(http.StatusConflict, gin.H{"error": err.Error()})
 			return
 		}
-
 		// Should never fail unless the userData
 		// representation becomes an unsupported type
 		userDataJSON, err := json.Marshal(userData)
 		if err != nil {
 			// Delete user from firebase
+			log.WithFields(log.Fields{"data": userData, "error": err.Error()}).Error("couldn't marshall data to json ")
 			c.AbortWithStatus(http.StatusInternalServerError)
 			return
 		}
+		log.WithFields(log.Fields{"user": string(userDataJSON)}).Info("initialized user in users service")
 		req, err := http.NewRequest(http.MethodPost, "/users", bytes.NewBuffer(userDataJSON))
 		if err != nil {
 			// delete user from firebase
+			log.WithFields(log.Fields{"error": err.Error(), "user": string(userDataJSON)}).Error("couldn't reach users service")
 			c.AbortWithStatus(http.StatusInternalServerError)
 			return
 		}
@@ -231,12 +247,15 @@ func CreateAdmin(s auth.Service) gin.HandlerFunc {
 		// FIX: Doesn't check that all fields are present
 		err := c.ShouldBindJSON(&signUpData)
 		if err != nil {
+			log.WithFields(log.Fields{"error": err.Error()}).Info("couldn't bind to json request to sign up admin")
 			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
 		}
 
 		userData, err := s.CreateUser(signUpData)
+		log.WithFields(log.Fields{"admin": userData}).Info("Creating admin in firebase")
 		if err != nil {
+			log.WithFields(log.Fields{"user": userData}).Info("Failed to create admin in firebase")
 			c.AbortWithStatusJSON(http.StatusConflict, gin.H{"error": err.Error()})
 			return
 		}
@@ -245,11 +264,14 @@ func CreateAdmin(s auth.Service) gin.HandlerFunc {
 		// representation becomes an unsupported type
 		userDataJSON, err := json.Marshal(userData)
 		if err != nil {
+			log.WithFields(log.Fields{"data": userData, "error": err.Error()}).Error("couldn't marshall data to json ")
 			c.AbortWithStatus(http.StatusInternalServerError)
 			return
 		}
+		log.WithFields(log.Fields{"admin": string(userDataJSON)}).Info("initialized admin in users service")
 		req, err := http.NewRequest(http.MethodPost, "/admins", bytes.NewBuffer(userDataJSON))
 		if err != nil {
+			log.WithFields(log.Fields{"error": err.Error(), "user": string(userDataJSON)}).Error("couldn't reach users service")
 			c.AbortWithStatus(http.StatusInternalServerError)
 			return
 		}
@@ -298,5 +320,42 @@ func AbortIfNotAuthorized(ctx *gin.Context) {
 
 	if !authorized {
 		ctx.AbortWithStatus(http.StatusUnauthorized)
+	}
+}
+
+func Logger() gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		// Starting time request
+		startTime := time.Now()
+
+		// Processing request
+		ctx.Next()
+
+		// End Time request
+		endTime := time.Now()
+
+		// execution time
+		latencyTime := endTime.Sub(startTime)
+
+		// Request method
+		requestMethod := ctx.Request.Method
+
+		// Request route
+		requestURI := ctx.Request.RequestURI
+
+		// status code
+		statusCode := ctx.Writer.Status()
+
+		// Request IP
+		clientIP := ctx.ClientIP()
+
+		log.WithFields(log.Fields{
+			"method":    requestMethod,
+			"uri":       requestURI,
+			"status":    statusCode,
+			"latency":   latencyTime,
+			"client_ip": clientIP,
+		}).Info("HTTP Request")
+
 	}
 }
