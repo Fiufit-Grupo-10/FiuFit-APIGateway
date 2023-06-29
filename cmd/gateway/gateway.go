@@ -236,32 +236,26 @@ func Goals(url *url.URL, s auth.Service) RouterConfig {
 	return func(router *gin.Engine) {
 		router.POST("/users/:user_id/goals",
 			middleware.AuthorizeUser(s),
-			// Verify that is the same
 			middleware.ReverseProxy(&*url))
 
 		router.PUT("/users/:user_id/goals",
 			middleware.AuthorizeUser(s),
-			// Verify that is the same
 			middleware.ReverseProxy(&*url))
 
 		router.GET("/users/:user_id/goals",
 			middleware.AuthorizeUser(s),
-			// Verify that is the same
 			middleware.ReverseProxy(&*url))
 
 		router.POST("/users/:user_id/training",
 			middleware.AuthorizeUser(s),
-			// Verify that is the same
 			middleware.ReverseProxy(*&url))
 
 		router.GET("/users/:user_id/training",
 			middleware.AuthorizeUser(s),
-			// Verify that is the same
 			middleware.ReverseProxy(*&url))
 
 		router.GET("/users/:user_id/training/metrics",
 			middleware.AuthorizeUser(s),
-			// Verify that is the same
 			middleware.ReverseProxy(*&url))
 	}
 }
@@ -270,7 +264,6 @@ func Metrics(url *url.URL, s auth.Service) RouterConfig {
 	return func(router *gin.Engine) {
 		router.GET("/metrics/trainings/:plan_id",
 			middleware.AuthorizeUser(s),
-			// Verify that is the same
 			middleware.ReverseProxy(*&url))
 	}
 }
