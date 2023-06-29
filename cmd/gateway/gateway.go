@@ -47,34 +47,23 @@ func Users(url *url.URL, s auth.Service) RouterConfig {
 
 		router.GET("/users/:user_id",
 			middleware.AuthorizeUser(s),
-			// Verify that it's the same user, need to notify if it's
-			// owner or not
-			// ?owns=true/false
-			middleware.AbortIfNotAuthorized,
 			middleware.ReverseProxy(&*url))
 
 		router.GET("/users",
 			middleware.AuthorizeUser(s),
-			middleware.AbortIfNotAuthorized,
 			middleware.SetQuery("admin", "false"),
 			middleware.ReverseProxy(&*url))
 
 		router.PUT("/users/:user_id",
 			middleware.AuthorizeUser(s),
-			// Verify that it's the same user,
-			middleware.AbortIfNotAuthorized,
 			middleware.ReverseProxy(&*url))
 
 		router.POST("/users/:user_id/followers/:follower_id",
 			middleware.AuthorizeUser(s),
-			// verify that user_id is the same as the one in the token
-			middleware.AbortIfNotAuthorized,
 			middleware.ReverseProxy(&*url))
 
 		router.DELETE("/users/:user_id/followers/:follower_id",
 			middleware.AuthorizeUser(s),
-			// verify that user_id is the same as the one in the token
-			middleware.AbortIfNotAuthorized,
 			middleware.ReverseProxy(&*url))
 
 		router.GET("/users/:user_id/followers",
@@ -87,18 +76,13 @@ func Users(url *url.URL, s auth.Service) RouterConfig {
 
 		router.POST("/certificates/:user_id",
 			middleware.AuthorizeUser(s),
-			// verify that user_id is the same as the one in the token
-			middleware.AbortIfNotAuthorized,
 			middleware.ReverseProxy(&*url))
 		router.GET("/certificates/:user_id",
 			middleware.AuthorizeUser(s),
-			// verify that user_id is the same as the one in the token
-			middleware.AbortIfNotAuthorized,
 			middleware.ReverseProxy(&*url))
 
 		router.GET("/users/:user_id/trainers",
 			middleware.AuthorizeUser(s),
-			middleware.AbortIfNotAuthorized,
 			middleware.ReverseProxy(&*url))
 
 	}
@@ -108,14 +92,12 @@ func Admin(usersUrl *url.URL, trainersURL *url.URL, metricsURL *url.URL, s auth.
 	return func(router *gin.Engine) {
 		router.POST("/admins",
 			middleware.AuthorizeUser(s),
-			middleware.AbortIfNotAuthorized,
 			middleware.AuthorizeAdmin(&*usersUrl),
 			middleware.CreateAdmin(s),
 			middleware.ReverseProxy(&*usersUrl))
 
 		router.GET("/admins/users",
 			middleware.AuthorizeUser(s),
-			middleware.AbortIfNotAuthorized,
 			middleware.AuthorizeAdmin(&*usersUrl),
 			middleware.RemovePathFromRequestURL("/admins"),
 			middleware.SetQuery("admin", "true"),
@@ -124,7 +106,6 @@ func Admin(usersUrl *url.URL, trainersURL *url.URL, metricsURL *url.URL, s auth.
 		// TODO: Add middleware to block in firebase
 		router.PATCH("/admins/users",
 			middleware.AuthorizeUser(s),
-			middleware.AbortIfNotAuthorized,
 			middleware.AuthorizeAdmin(&*usersUrl),
 			middleware.RemovePathFromRequestURL("/admins"),
 			middleware.ChangeBlockStatusFirebase(s),
@@ -132,7 +113,6 @@ func Admin(usersUrl *url.URL, trainersURL *url.URL, metricsURL *url.URL, s auth.
 
 		router.GET("/admins/plans",
 			middleware.AuthorizeUser(s),
-			middleware.AbortIfNotAuthorized,
 			middleware.AuthorizeAdmin(&*usersUrl),
 			middleware.RemovePathFromRequestURL("/admins"),
 			middleware.SetQuery("admin", "true"),
@@ -140,7 +120,6 @@ func Admin(usersUrl *url.URL, trainersURL *url.URL, metricsURL *url.URL, s auth.
 
 		router.GET("/admins/plans/:trainer_id",
 			middleware.AuthorizeUser(s),
-			middleware.AbortIfNotAuthorized,
 			middleware.AuthorizeAdmin(&*usersUrl),
 			middleware.RemovePathFromRequestURL("/admins"),
 			middleware.SetQuery("admin", "true"),
@@ -148,7 +127,6 @@ func Admin(usersUrl *url.URL, trainersURL *url.URL, metricsURL *url.URL, s auth.
 
 		router.PATCH("/admins/plans",
 			middleware.AuthorizeUser(s),
-			middleware.AbortIfNotAuthorized,
 			middleware.AuthorizeAdmin(&*usersUrl),
 			middleware.SetQuery("admin", "true"),
 			middleware.RemovePathFromRequestURL("/admins"),
@@ -156,41 +134,35 @@ func Admin(usersUrl *url.URL, trainersURL *url.URL, metricsURL *url.URL, s auth.
 
 		router.GET("/admins/certificates",
 			middleware.AuthorizeUser(s),
-			middleware.AbortIfNotAuthorized,
 			middleware.AuthorizeAdmin(&*usersUrl),
 			middleware.RemovePathFromRequestURL("/admins"),
 			middleware.ReverseProxy(&*usersUrl))
 
 		router.PUT("/admins/certificates/:user_id/:id",
 			middleware.AuthorizeUser(s),
-			middleware.AbortIfNotAuthorized,
 			middleware.AuthorizeAdmin(&*usersUrl),
 			middleware.RemovePathFromRequestURL("/admins"),
 			middleware.ReverseProxy(&*usersUrl))
 
 		router.POST("/admins/metrics",
 			middleware.AuthorizeUser(s),
-			middleware.AbortIfNotAuthorized,
 			middleware.RemovePathFromRequestURL("/admins"),
 			middleware.ReverseProxy(&*metricsURL))
 
 		router.GET("/admins/metrics",
 			middleware.AuthorizeUser(s),
-			middleware.AbortIfNotAuthorized,
 			middleware.AuthorizeAdmin(&*usersUrl),
 			middleware.RemovePathFromRequestURL("/admins"),
 			middleware.ReverseProxy(&*metricsURL))
 
 		router.GET("/admins/metrics/totals",
 			middleware.AuthorizeUser(s),
-			middleware.AbortIfNotAuthorized,
 			middleware.AuthorizeAdmin(&*usersUrl),
 			middleware.RemovePathFromRequestURL("/admins"),
 			middleware.ReverseProxy(&*metricsURL))
 
 		router.GET("/admins/metrics/locations",
 			middleware.AuthorizeUser(s),
-			middleware.AbortIfNotAuthorized,
 			middleware.AuthorizeAdmin(&*usersUrl),
 			middleware.RemovePathFromRequestURL("/admins"),
 			middleware.ReverseProxy(&*metricsURL))
@@ -201,53 +173,44 @@ func Trainings(url *url.URL, s auth.Service) RouterConfig {
 	return func(router *gin.Engine) {
 		router.POST("/plans",
 			middleware.AuthorizeUser(s),
-			middleware.AbortIfNotAuthorized,
 			middleware.ReverseProxy(&*url))
 
 		router.GET("/plans",
 			middleware.AuthorizeUser(s),
-			middleware.AbortIfNotAuthorized,
 			middleware.SetQuery("admin", "false"),
 			middleware.ReverseProxy(&*url))
 
 		router.PUT("/plans/:plan_id",
 			middleware.AuthorizeUser(s),
-			middleware.AbortIfNotAuthorized,
 			middleware.ReverseProxy(&*url))
 
 		router.GET("/plans/:plan_id",
 			middleware.AuthorizeUser(s),
 			// Verify that the user is indeed a trainer, and that it's the same
-			middleware.AbortIfNotAuthorized,
 			middleware.SetQuery("admin", "false"),
 			middleware.ReverseProxy(&*url))
 
 		router.GET("/trainers/:trainer_id/plans",
 			middleware.AuthorizeUser(s),
 			// Verify that the user is indeed a trainer, and that it's the same
-			middleware.AbortIfNotAuthorized,
 			middleware.SetQuery("admin", "false"),
 			middleware.ReverseProxy(&*url))
 
 		// TODO: Verify trainer_id vs token
 		router.DELETE("/plans/:trainer_id/:plan_id",
 			middleware.AuthorizeUser(s),
-			middleware.AbortIfNotAuthorized,
 			middleware.ReverseProxy(&*url))
 
 		router.POST("/users/:user_id/trainings/favourites",
 			middleware.AuthorizeUser(s),
-			middleware.AbortIfNotAuthorized,
 			middleware.ReverseProxy(&*url))
 
 		router.GET("/users/:user_id/trainings/favourites",
 			middleware.AuthorizeUser(s),
-			middleware.AbortIfNotAuthorized,
 			middleware.ReverseProxy(&*url))
 
 		router.DELETE("/users/:user_id/trainings/favourites/:plan_id",
 			middleware.AuthorizeUser(s),
-			middleware.AbortIfNotAuthorized,
 			middleware.ReverseProxy(&*url))
 	}
 }
@@ -256,18 +219,15 @@ func Reviews(url *url.URL, s auth.Service) RouterConfig {
 	return func(router *gin.Engine) {
 		router.POST("/reviews",
 			middleware.AuthorizeUser(s),
-			middleware.AbortIfNotAuthorized,
 			middleware.ReverseProxy(&*url))
 
 		router.GET("/reviews/:plan_id",
 			middleware.AuthorizeUser(s),
-			middleware.AbortIfNotAuthorized,
 			middleware.ReverseProxy(&*url))
 
 		router.GET("/reviews/:plan_id/mean", middleware.ReverseProxy(&*url))
 		router.PUT("/reviews/:review_id",
 			middleware.AuthorizeUser(s),
-			middleware.AbortIfNotAuthorized,
 			middleware.ReverseProxy(&*url))
 	}
 }
@@ -276,38 +236,26 @@ func Goals(url *url.URL, s auth.Service) RouterConfig {
 	return func(router *gin.Engine) {
 		router.POST("/users/:user_id/goals",
 			middleware.AuthorizeUser(s),
-			// Verify that is the same
-			middleware.AbortIfNotAuthorized,
 			middleware.ReverseProxy(&*url))
 
 		router.PUT("/users/:user_id/goals",
 			middleware.AuthorizeUser(s),
-			// Verify that is the same
-			middleware.AbortIfNotAuthorized,
 			middleware.ReverseProxy(&*url))
 
 		router.GET("/users/:user_id/goals",
 			middleware.AuthorizeUser(s),
-			// Verify that is the same
-			middleware.AbortIfNotAuthorized,
 			middleware.ReverseProxy(&*url))
 
 		router.POST("/users/:user_id/training",
 			middleware.AuthorizeUser(s),
-			// Verify that is the same
-			middleware.AbortIfNotAuthorized,
 			middleware.ReverseProxy(*&url))
 
 		router.GET("/users/:user_id/training",
 			middleware.AuthorizeUser(s),
-			// Verify that is the same
-			middleware.AbortIfNotAuthorized,
 			middleware.ReverseProxy(*&url))
 
 		router.GET("/users/:user_id/training/metrics",
 			middleware.AuthorizeUser(s),
-			// Verify that is the same
-			middleware.AbortIfNotAuthorized,
 			middleware.ReverseProxy(*&url))
 	}
 }
@@ -316,8 +264,6 @@ func Metrics(url *url.URL, s auth.Service) RouterConfig {
 	return func(router *gin.Engine) {
 		router.GET("/metrics/trainings/:plan_id",
 			middleware.AuthorizeUser(s),
-			// Verify that is the same
-			middleware.AbortIfNotAuthorized,
 			middleware.ReverseProxy(*&url))
 	}
 }

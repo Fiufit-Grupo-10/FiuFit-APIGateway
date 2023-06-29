@@ -23,7 +23,6 @@ func TestMain(m *testing.M) {
 	os.Exit(m.Run())
 }
 
-
 func TestGateway(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 	assertStatusCode := func(t testing.TB, got, want int) {

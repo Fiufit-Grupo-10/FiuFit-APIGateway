@@ -15,7 +15,7 @@ on:
 
 jobs:
   
-  Docker-Hub-Deploy:
+  push-docker-image:
     runs-on: ubuntu-latest
         
     steps:
@@ -47,3 +47,22 @@ jobs:
           platforms: linux/amd64
           push: true
           tags: ${{ secrets.DOCKER_USERNAME }}/fiufit-api-gateway:latest
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: push-docker-image
+    steps:      
+      - name: checkout
+        uses: actions/checkout@v3
+
+      - uses: okteto/context@latest
+        with:
+          token: ${{ secrets.OKTETO_TOKEN }}
+     
+      - name: Rollout deployment
+        env:
+          CREDENTIALS: ${{secrets.KUBE_CREDENTIALS}}
+        run: |
+          echo "$CREDENTIALS" >> okteto-kube.config
+          export KUBECONFIG=$PWD/okteto-kube.config:${KUBECONFIG:-$HOME}/.kube/config}
+          kubectl rollout restart deployment/service-users --namespace=franco-jyq
