@@ -14,6 +14,7 @@ import (
 	"testing"
 
 	"fiufit.api.gateway/internal/auth"
+	"fiufit.api.gateway/internal/config"
 	"github.com/gin-gonic/gin"
 	log "github.com/sirupsen/logrus"
 )
@@ -53,7 +54,8 @@ func TestGateway(t *testing.T) {
 
 			usersServiceURL, _ := url.Parse(usersService.URL)
 			s := AuthTestService{}
-			gateway := New(Users(usersServiceURL, s))
+			c := &config.Config{IsDevEnviroment: true}
+			gateway := New(c, Users(usersServiceURL, s))
 
 			signUpData := auth.SignUpModel{
 				Email: "abc@xyz.com", Username: "abc", Password: "123",
@@ -85,7 +87,8 @@ func TestGateway(t *testing.T) {
 			usersServiceURL, _ := url.Parse(usersService.URL)
 
 			s := AuthTestService{}
-			gateway := New(Users(usersServiceURL, s))
+			c := &config.Config{IsDevEnviroment: true}
+			gateway := New(c, Users(usersServiceURL, s))
 
 			w := CreateTestResponseRecorder()
 			req, _ := http.NewRequest(http.MethodPut, "/users/123", bytes.NewReader(profileDataJSON))
@@ -109,7 +112,8 @@ func TestGateway(t *testing.T) {
 		trainersServiceURL, _ := url.Parse("")
 		metricsServiceURL, _ := url.Parse("")
 		s := AuthTestService{}
-		gateway := New(Admin(usersServiceURL, trainersServiceURL, metricsServiceURL, s))
+		c := &config.Config{IsDevEnviroment: true}
+		gateway := New(c, Admin(usersServiceURL, trainersServiceURL, metricsServiceURL, s))
 
 		signUpData := auth.SignUpModel{
 			Email: "abc@xyz.com", Username: "abc", Password: "123",
@@ -134,7 +138,8 @@ func TestGateway(t *testing.T) {
 		trainersServiceURL, _ := url.Parse("")
 		metricsServiceURL, _ := url.Parse("")
 		s := AuthTestService{}
-		gateway := New(Admin(usersServiceURL, trainersServiceURL, metricsServiceURL, s))
+		c := &config.Config{IsDevEnviroment: true}
+		gateway := New(c, Admin(usersServiceURL, trainersServiceURL, metricsServiceURL, s))
 		signUpData := auth.SignUpModel{
 			Email: "abc@xyz.com", Username: "abc", Password: "123",
 		}
@@ -164,7 +169,8 @@ func TestGateway(t *testing.T) {
 		trainersServiceURL, _ := url.Parse("")
 		metricsServiceURL, _ := url.Parse("")
 		s := AuthTestService{}
-		gateway := New(Admin(usersServiceURL, trainersServiceURL, metricsServiceURL, s))
+		c := &config.Config{IsDevEnviroment: true}
+		gateway := New(c, Admin(usersServiceURL, trainersServiceURL, metricsServiceURL, s))
 		w := CreateTestResponseRecorder()
 		req, _ := http.NewRequest(http.MethodGet, "/admins/users", nil)
 		req.Header.Set("Authorization", "abc")
@@ -181,7 +187,8 @@ func TestGateway(t *testing.T) {
 
 		usersServiceURL, _ := url.Parse(usersService.URL)
 		s := AuthTestService{}
-		gateway := New(Users(usersServiceURL, s))
+		c := &config.Config{IsDevEnviroment: true}
+		gateway := New(c, Users(usersServiceURL, s))
 		w := CreateTestResponseRecorder()
 		req, _ := http.NewRequest(http.MethodGet, "/users", nil)
 		req.Header.Set("Authorization", "xyz")

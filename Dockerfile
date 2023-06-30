@@ -11,6 +11,7 @@ COPY internal/ ./internal/
 COPY scripts/ ./scripts/
 
 COPY firebase.json .
+COPY openapi.json .
 
 RUN go build -o main ./cmd/main.go
 

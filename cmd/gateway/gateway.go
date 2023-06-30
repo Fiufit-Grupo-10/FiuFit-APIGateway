@@ -6,8 +6,10 @@ import (
 
 	"fiufit.api.gateway/cmd/middleware"
 	"fiufit.api.gateway/internal/auth"
+	"fiufit.api.gateway/internal/config"
 	"github.com/gin-gonic/gin"
-
+	"github.com/mvrilo/go-redoc"
+	ginredoc "github.com/mvrilo/go-redoc/gin"
 	gintrace "gopkg.in/DataDog/dd-trace-go.v1/contrib/gin-gonic/gin"
 )
 
@@ -25,13 +27,26 @@ func (g *Gateway) Run(addr ...string) {
 	g.router.Run(addr...)
 }
 
-func New(configs ...RouterConfig) *Gateway {
+func New(c *config.Config ,routers ...RouterConfig) *Gateway {
+	doc := redoc.Redoc{
+			Title:       "FiuFit API Gateway",
+			Description: "API Gateway for FiuFit App",
+			SpecFile:    "./openapi.json", // "./openapi.yaml"
+			SpecPath:    "/openapi.json",  // "/openapi.yaml"
+			DocsPath:    "/docs",
+	}
 	router := gin.New()
+	if !c.IsDevEnviroment {
+		router.Use(ginredoc.New(doc))
+	}
 	router.Use(gin.Recovery())
 	router.Use(middleware.Logger())
+
 	router.Use(gintrace.Middleware("service-external-gateway"))
 	router.Use(middleware.Cors())
-	for _, option := range configs {
+
+
+	for _, option := range routers {
 		option(router)
 	}
 	return &Gateway{router}
@@ -40,7 +55,6 @@ func New(configs ...RouterConfig) *Gateway {
 // Sets the routes for the users endpoint
 func Users(url *url.URL, s auth.Service) RouterConfig {
 	return func(router *gin.Engine) {
-
 		router.POST("/users",
 			middleware.CreateUser(s),
 			middleware.ReverseProxy(&*url))
@@ -186,17 +200,14 @@ func Trainings(url *url.URL, s auth.Service) RouterConfig {
 
 		router.GET("/plans/:plan_id",
 			middleware.AuthorizeUser(s),
-			// Verify that the user is indeed a trainer, and that it's the same
 			middleware.SetQuery("admin", "false"),
 			middleware.ReverseProxy(&*url))
 
 		router.GET("/trainers/:trainer_id/plans",
 			middleware.AuthorizeUser(s),
-			// Verify that the user is indeed a trainer, and that it's the same
 			middleware.SetQuery("admin", "false"),
 			middleware.ReverseProxy(&*url))
 
-		// TODO: Verify trainer_id vs token
 		router.DELETE("/plans/:trainer_id/:plan_id",
 			middleware.AuthorizeUser(s),
 			middleware.ReverseProxy(&*url))

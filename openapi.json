@@ -1,0 +1,3673 @@
+"openapi": "3.0.2",
+  "info": {
+    "title": "Gateway",
+    "version": "0.1.0"
+  },
+  "paths": {
+    "/users": {
+      "get": {
+        "tags": [
+          "users"
+        ],
+        "summary": "Get Users",
+        "operationId": "get_users_users_get",
+        "parameters": [
+          {
+            "required": false,
+            "schema": {
+              "title": "Username",
+              "type": "string"
+            },
+            "name": "username",
+            "in": "query"
+          },
+          {
+            "required": false,
+            "schema": {
+              "title": "Skip",
+              "type": "integer",
+              "default": 0
+            },
+            "name": "skip",
+            "in": "query"
+          },
+          {
+            "required": false,
+            "schema": {
+              "title": "Limit",
+              "type": "integer",
+              "default": 10
+            },
+            "name": "limit",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "title": "Response Get Users Users Get",
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/UserReturn"
+                  }
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "users"
+        ],
+        "summary": "Create User",
+        "operationId": "create_user_users_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UserCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserReturn"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/users/{user_id}": {
+      "get": {
+        "tags": [
+          "users"
+        ],
+        "summary": "Get User",
+        "operationId": "get_user_users__user_id__get",
+        "parameters": [
+          {
+            "required": true,
+            "schema": {
+              "title": "User Id",
+              "type": "string"
+            },
+            "name": "user_id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserReturn"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "users"
+        ],
+        "summary": "Update User",
+        "operationId": "update_user_users__user_id__put",
+        "parameters": [
+          {
+            "required": true,
+            "schema": {
+              "title": "User Id",
+              "type": "string"
+            },
+            "name": "user_id",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UserRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserReturn"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/users/{user_id}/followers/{follower_id}": {
+      "post": {
+        "tags": [
+          "users"
+        ],
+        "summary": "Add User Follower",
+        "operationId": "add_user_follower_users__user_id__followers__follower_id__post",
+        "parameters": [
+          {
+            "required": true,
+            "schema": {
+              "title": "User Id",
+              "type": "string"
+            },
+            "name": "user_id",
+            "in": "path"
+          },
+          {
+            "required": true,
+            "schema": {
+              "title": "Follower Id",
+              "type": "string"
+            },
+            "name": "follower_id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FollowerReturn"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "users"
+        ],
+        "summary": "Delete User Follower",
+        "operationId": "delete_user_follower_users__user_id__followers__follower_id__delete",
+        "parameters": [
+          {
+            "required": true,
+            "schema": {
+              "title": "User Id",
+              "type": "string"
+            },
+            "name": "user_id",
+            "in": "path"
+          },
+          {
+            "required": true,
+            "schema": {
+              "title": "Follower Id",
+              "type": "string"
+            },
+            "name": "follower_id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/users/{user_id}/followers": {
+      "get": {
+        "tags": [
+          "users"
+        ],
+        "summary": "Get Users Followers",
+        "operationId": "get_users_followers_users__user_id__followers_get",
+        "parameters": [
+          {
+            "required": true,
+            "schema": {
+              "title": "User Id",
+              "type": "string"
+            },
+            "name": "user_id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "title": "Response Get Users Followers Users  User Id  Followers Get",
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/users/{user_id}/following": {
+      "get": {
+        "tags": [
+          "users"
+        ],
+        "summary": "Get Users Following",
+        "operationId": "get_users_following_users__user_id__following_get",
+        "parameters": [
+          {
+            "required": true,
+            "schema": {
+              "title": "User Id",
+              "type": "string"
+            },
+            "name": "user_id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "title": "Response Get Users Following Users  User Id  Following Get",
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/users/{user_id}/trainers": {
+      "get": {
+        "tags": [
+          "users"
+        ],
+        "summary": "Filter Trainers By Distance",
+        "operationId": "filter_trainers_by_distance_users__user_id__trainers_get",
+        "parameters": [
+          {
+            "required": true,
+            "schema": {
+              "title": "User Id",
+              "type": "string"
+            },
+            "name": "user_id",
+            "in": "path"
+          },
+          {
+            "required": true,
+            "schema": {
+              "title": "Distance",
+              "type": "number"
+            },
+            "name": "distance",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "title": "Response Filter Trainers By Distance Users  User Id  Trainers Get",
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/UserReturn"
+                  }
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/trainingtypes": {
+      "get": {
+        "tags": [
+          "trainingtypes"
+        ],
+        "summary": "Get Training Types",
+        "operationId": "get_training_types_trainingtypes_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "title": "Response Get Training Types Trainingtypes Get",
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/TrainingType"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admins": {
+      "post": {
+        "tags": [
+          "admins"
+        ],
+        "summary": "Create Admin",
+        "operationId": "create_admin_admins_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdminCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admins/{user_id}": {
+      "get": {
+        "tags": [
+          "admins"
+        ],
+        "summary": "Get Admin",
+        "operationId": "get_admin_admins__user_id__get",
+        "parameters": [
+          {
+            "required": true,
+            "schema": {
+              "title": "User Id",
+              "type": "string"
+            },
+            "name": "user_id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admins/users": {
+      "get": {
+        "tags": [
+          "admins"
+        ],
+        "summary": "Get Users",
+        "operationId": "get_users_users_get2",
+        "parameters": [
+          {
+            "required": false,
+            "schema": {
+              "title": "Username",
+              "type": "string"
+            },
+            "name": "username",
+            "in": "query"
+          },
+          {
+            "required": false,
+            "schema": {
+              "title": "Skip",
+              "type": "integer",
+              "default": 0
+            },
+            "name": "skip",
+            "in": "query"
+          },
+          {
+            "required": false,
+            "schema": {
+              "title": "Limit",
+              "type": "integer",
+              "default": 10
+            },
+            "name": "limit",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "title": "Response Get Users Users Get",
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/UserReturn"
+                  }
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "admins"
+        ],
+        "summary": "Update Users Block",
+        "operationId": "update_users_block_users_patch",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "title": "Users",
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/UserBlock"
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "title": "Response Update Users Block Users Patch",
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/UserReturn"
+                  }
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/certificates/{user_id}": {
+      "get": {
+        "tags": [
+          "certificates"
+        ],
+        "summary": "Get User Certificate",
+        "operationId": "get_user_certificate_certificates__user_id__get",
+        "parameters": [
+          {
+            "required": true,
+            "schema": {
+              "title": "User Id",
+              "type": "string"
+            },
+            "name": "user_id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CertificateReturn"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "certificates"
+        ],
+        "summary": "Load Certificate",
+        "operationId": "load_certificate_certificates__user_id__post",
+        "parameters": [
+          {
+            "required": true,
+            "schema": {
+              "title": "User Id",
+              "type": "string"
+            },
+            "name": "user_id",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CertificateRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CertificateReturn"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admins/certificates/{user_id}/{id}": {
+      "put": {
+        "tags": [
+          "admins"
+        ],
+        "summary": "Update Certificate",
+        "operationId": "update_certificate_certificates__user_id___id__put",
+        "parameters": [
+          {
+            "required": true,
+            "schema": {
+              "title": "User Id",
+              "type": "string"
+            },
+            "name": "user_id",
+            "in": "path"
+          },
+          {
+            "required": true,
+            "schema": {
+              "title": "Id",
+              "type": "integer"
+            },
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CertificateRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CertificateReturn"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admins/certificates": {
+      "get": {
+        "tags": [
+          "admins"
+        ],
+        "summary": "Get Certificates",
+        "operationId": "get_certificates_certificates_get",
+        "parameters": [
+          {
+            "required": false,
+            "schema": {
+              "title": "Skip",
+              "type": "integer",
+              "default": 0
+            },
+            "name": "skip",
+            "in": "query"
+          },
+          {
+            "required": false,
+            "schema": {
+              "title": "Limit",
+              "type": "integer",
+              "default": 10
+            },
+            "name": "limit",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "title": "Response Get Certificates Certificates Get",
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/CertificateReturn"
+                  }
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admins/metrics": {
+      "get": {
+        "tags": [
+          "admins"
+        ],
+        "summary": "Get Metrics",
+        "operationId": "get_metrics_metrics_get",
+        "parameters": [
+          {
+            "required": true,
+            "schema": {
+              "title": "Metric Type",
+              "type": "string"
+            },
+            "name": "metric_type",
+            "in": "query"
+          },
+          {
+            "description": "Start date in ISO format",
+            "required": false,
+            "schema": {
+              "title": "Start Date",
+              "type": "string",
+              "description": "Start date in ISO format"
+            },
+            "name": "start_date",
+            "in": "query"
+          },
+          {
+            "description": "End date in ISO format",
+            "required": false,
+            "schema": {
+              "title": "End Date",
+              "type": "string",
+              "description": "End date in ISO format"
+            },
+            "name": "end_date",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "admins"
+        ],
+        "summary": "Create Metric",
+        "operationId": "create_metric_metrics_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UserMetric"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserMetric"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admins/metrics/totals": {
+      "get": {
+        "tags": [
+          "admins"
+        ],
+        "summary": "Get Totals",
+        "operationId": "get_totals_metrics_totals_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TotalMetricsResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admins/metrics/locations": {
+      "get": {
+        "tags": [
+          "admins"
+        ],
+        "summary": "Get Geo Stats",
+        "operationId": "get_geo_stats_metrics_locations_get",
+        "parameters": [
+          {
+            "required": true,
+            "schema": {
+              "title": "Register Type",
+              "type": "string"
+            },
+            "name": "register_type",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TotalGeographicalResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/metrics/trainings/{training_id}": {
+      "get": {
+        "tags": [
+          "metrics"
+        ],
+        "summary": "Get Metrics",
+        "operationId": "get_metrics_metrics_trainings__training_id__get",
+        "parameters": [
+          {
+            "required": true,
+            "schema": {
+              "title": "Training Id",
+              "type": "string"
+            },
+            "name": "training_id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TrainingPlanMetrics"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admins/plans": {
+      "get": {
+        "tags": [
+          "admins"
+        ],
+        "summary": "Get Plans",
+        "operationId": "get_plans_plans_get",
+        "parameters": [
+          {
+            "required": false,
+            "schema": {
+              "title": "Skip",
+              "type": "integer",
+              "default": 0
+            },
+            "name": "skip",
+            "in": "query"
+          },
+          {
+            "required": false,
+            "schema": {
+              "title": "Limit",
+              "type": "integer",
+              "default": 25
+            },
+            "name": "limit",
+            "in": "query"
+          },
+          {
+            "required": false,
+            "schema": {
+              "$ref": "#/components/schemas/Difficulty"
+            },
+            "name": "difficulty",
+            "in": "query"
+          },
+          {
+            "required": false,
+            "schema": {
+              "title": "Types",
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "name": "types",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "title": "Response Get Plans Plans Get",
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/TrainingPlan"
+                  }
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "admins"
+        ],
+        "summary": "Block Plan",
+        "operationId": "block_plan_plans_patch",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "title": "Plans",
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/BlockTrainingPlan"
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/plans": {
+      "get": {
+        "tags": [
+          "plans"
+        ],
+        "summary": "Get Plans",
+        "operationId": "get_plans_plans_get3",
+        "parameters": [
+          {
+            "required": false,
+            "schema": {
+              "title": "Skip",
+              "type": "integer",
+              "default": 0
+            },
+            "name": "skip",
+            "in": "query"
+          },
+          {
+            "required": false,
+            "schema": {
+              "title": "Limit",
+              "type": "integer",
+              "default": 25
+            },
+            "name": "limit",
+            "in": "query"
+          },
+          {
+            "required": false,
+            "schema": {
+              "$ref": "#/components/schemas/Difficulty"
+            },
+            "name": "difficulty",
+            "in": "query"
+          },
+          {
+            "required": false,
+            "schema": {
+              "title": "Types",
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "name": "types",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "title": "Response Get Plans Plans Get",
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/TrainingPlan"
+                  }
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "plans"
+        ],
+        "summary": "Create Plan",
+        "operationId": "create_plan_plans_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TrainingPlan"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TrainingPlan"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/plans/{plan_id}": {
+      "get": {
+        "tags": [
+          "plans"
+        ],
+        "summary": "Get Plan",
+        "operationId": "get_plan_plans__plan_id__get",
+        "parameters": [
+          {
+            "required": true,
+            "schema": {
+              "title": "Plan Id",
+              "type": "string"
+            },
+            "name": "plan_id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TrainingPlan"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "plans"
+        ],
+        "summary": "Update Plan",
+        "operationId": "update_plan_plans__plan_id__put",
+        "parameters": [
+          {
+            "required": true,
+            "schema": {
+              "title": "Plan Id",
+              "type": "string"
+            },
+            "name": "plan_id",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateTrainingPlan"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TrainingPlan"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/trainers/{trainer_id}/plans": {
+      "get": {
+        "tags": [
+          "plans"
+        ],
+        "summary": "Get Trainer Training Plans",
+        "operationId": "get_trainer_training_plans_trainers__trainer_id__plans_get",
+        "parameters": [
+          {
+            "required": true,
+            "schema": {
+              "title": "Trainer Id",
+              "type": "string"
+            },
+            "name": "trainer_id",
+            "in": "path"
+          },
+          {
+            "required": false,
+            "schema": {
+              "title": "Admin",
+              "type": "boolean",
+              "default": false
+            },
+            "name": "admin",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "title": "Response Get Trainer Training Plans Trainers  Trainer Id  Plans Get",
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/TrainingPlan"
+                  }
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/plans/{trainer_id}/{plan_id}": {
+      "delete": {
+        "tags": [
+          "plans"
+        ],
+        "summary": "Delete Plan",
+        "operationId": "delete_plan_plans__trainer_id___plan_id__delete",
+        "parameters": [
+          {
+            "required": true,
+            "schema": {
+              "title": "Plan Id",
+              "type": "string"
+            },
+            "name": "plan_id",
+            "in": "path"
+          },
+          {
+            "required": true,
+            "schema": {
+              "title": "Trainer Id",
+              "type": "string"
+            },
+            "name": "trainer_id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/users/{user_id}/trainings/favourites": {
+      "get": {
+        "tags": [
+          "plans"
+        ],
+        "summary": "Get User Favourite Plans",
+        "operationId": "get_user_favourite_plans_users__user_id__trainings_favourites_get",
+        "parameters": [
+          {
+            "required": true,
+            "schema": {
+              "title": "User Id",
+              "type": "string"
+            },
+            "name": "user_id",
+            "in": "path"
+          },
+          {
+            "required": false,
+            "schema": {
+              "title": "Skip",
+              "type": "integer",
+              "default": 0
+            },
+            "name": "skip",
+            "in": "query"
+          },
+          {
+            "required": false,
+            "schema": {
+              "title": "Limit",
+              "type": "integer",
+              "default": 25
+            },
+            "name": "limit",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "title": "Response Get User Favourite Plans Users  User Id  Trainings Favourites Get",
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/TrainingPlan"
+                  }
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "plans"
+        ],
+        "summary": "Add Favourite",
+        "operationId": "add_favourite_users__user_id__trainings_favourites_post",
+        "parameters": [
+          {
+            "required": true,
+            "schema": {
+              "title": "User Id",
+              "type": "string"
+            },
+            "name": "user_id",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateFavourite"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/users/{user_id}/trainings/favourites/{plan_id}": {
+      "delete": {
+        "tags": [
+          "plans"
+        ],
+        "summary": "Delete User Favourite Plan",
+        "operationId": "delete_user_favourite_plan_users__user_id__trainings_favourites__plan_id__delete",
+        "parameters": [
+          {
+            "required": true,
+            "schema": {
+              "title": "User Id",
+              "type": "string"
+            },
+            "name": "user_id",
+            "in": "path"
+          },
+          {
+            "required": true,
+            "schema": {
+              "title": "Plan Id",
+              "type": "string"
+            },
+            "name": "plan_id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/reviews": {
+      "post": {
+        "tags": [
+          "reviews"
+        ],
+        "summary": "Create Review",
+        "operationId": "create_review_reviews_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Review"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "title": "Response Create Review Reviews Post",
+                  "anyOf": [
+                    {
+                      "$ref": "#/components/schemas/Review"
+                    },
+                    {
+                      "type": "object"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/reviews/{review_id}": {
+      "put": {
+        "tags": [
+          "reviews"
+        ],
+        "summary": "Update Review",
+        "operationId": "update_review_reviews__review_id__put",
+        "parameters": [
+          {
+            "required": true,
+            "schema": {
+              "title": "Review Id",
+              "type": "string"
+            },
+            "name": "review_id",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateReview"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UpdateReview"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/reviews/{plan_id}/mean": {
+      "get": {
+        "tags": [
+          "reviews"
+        ],
+        "summary": "Get Plan Average Score",
+        "operationId": "get_plan_average_score_reviews__plan_id__mean_get",
+        "parameters": [
+          {
+            "required": true,
+            "schema": {
+              "title": "Plan Id",
+              "type": "string"
+            },
+            "name": "plan_id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReviewAverageScoreResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/reviews/{plan_id}": {
+      "get": {
+        "tags": [
+          "reviews"
+        ],
+        "summary": "Get Training Plan Reviews",
+        "operationId": "get_training_plan_reviews_reviews__plan_id__get",
+        "parameters": [
+          {
+            "required": true,
+            "schema": {
+              "title": "Plan Id",
+              "type": "string"
+            },
+            "name": "plan_id",
+            "in": "path"
+          },
+          {
+            "required": false,
+            "schema": {
+              "title": "Skip",
+              "type": "integer",
+              "default": 0
+            },
+            "name": "skip",
+            "in": "query"
+          },
+          {
+            "required": false,
+            "schema": {
+              "title": "Limit",
+              "type": "integer",
+              "default": 25
+            },
+            "name": "limit",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReviewResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/users/{user_id}/goals": {
+      "get": {
+        "tags": [
+          "goals"
+        ],
+        "summary": "Get User Goals",
+        "operationId": "get_user_goals_users__user_id__goals_get",
+        "parameters": [
+          {
+            "required": true,
+            "schema": {
+              "title": "User Id",
+              "type": "string"
+            },
+            "name": "user_id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserGoalsReturn"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "goals"
+        ],
+        "summary": "Update User Goals",
+        "operationId": "update_user_goals_users__user_id__goals_put",
+        "parameters": [
+          {
+            "required": true,
+            "schema": {
+              "title": "User Id",
+              "type": "string"
+            },
+            "name": "user_id",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "title": "Goals",
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/Goal"
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserGoalsReturn"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "goals"
+        ],
+        "summary": "Create User Goals",
+        "operationId": "create_user_goals_users__user_id__goals_post",
+        "parameters": [
+          {
+            "required": true,
+            "schema": {
+              "title": "User Id",
+              "type": "string"
+            },
+            "name": "user_id",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "title": "Goals",
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/Goal"
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserGoalsReturn"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/users/{user_id}/training": {
+      "get": {
+        "tags": [
+          "training"
+        ],
+        "summary": "Get Trainings",
+        "operationId": "get_trainings_users__user_id__training_get",
+        "parameters": [
+          {
+            "required": true,
+            "schema": {
+              "title": "User Id",
+              "type": "string"
+            },
+            "name": "user_id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "title": "Response Get Trainings Users  User Id  Training Get",
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Training"
+                  }
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "training"
+        ],
+        "summary": "Load Training",
+        "operationId": "load_training_users__user_id__training_post",
+        "parameters": [
+          {
+            "required": true,
+            "schema": {
+              "title": "User Id",
+              "type": "string"
+            },
+            "name": "user_id",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ExerciseRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Training"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/users/{user_id}/training/metrics": {
+      "get": {
+        "tags": [
+          "training"
+        ],
+        "summary": "Get Trainings Metrics",
+        "operationId": "get_trainings_metrics_users__user_id__training_metrics_get",
+        "parameters": [
+          {
+            "required": true,
+            "schema": {
+              "title": "User Id",
+              "type": "string"
+            },
+            "name": "user_id",
+            "in": "path"
+          },
+          {
+            "description": "Start date in ISO format",
+            "required": false,
+            "schema": {
+              "title": "Start Date",
+              "type": "string",
+              "description": "Start date in ISO format"
+            },
+            "name": "start_date",
+            "in": "query"
+          },
+          {
+            "description": "End date in ISO format",
+            "required": false,
+            "schema": {
+              "title": "End Date",
+              "type": "string",
+              "description": "End date in ISO format"
+            },
+            "name": "end_date",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Dashboard"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "BlockedUser": {
+        "title": "BlockedUser",
+        "required": [
+          "metric_type"
+        ],
+        "type": "object",
+        "properties": {
+          "metric_type": {
+            "title": "Metric Type",
+            "enum": [
+              "blocked_user"
+            ],
+            "type": "string"
+          }
+        }
+      },
+      "HTTPValidationError": {
+        "title": "HTTPValidationError",
+        "type": "object",
+        "properties": {
+          "detail": {
+            "title": "Detail",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            }
+          }
+        }
+      },
+      "Login": {
+        "title": "Login",
+        "required": [
+          "metric_type"
+        ],
+        "type": "object",
+        "properties": {
+          "metric_type": {
+            "title": "Metric Type",
+            "enum": [
+              "login_with_federated_identity",
+              "login_with_email_and_password"
+            ],
+            "type": "string"
+          }
+        }
+      },
+      "NewUser": {
+        "title": "NewUser",
+        "required": [
+          "metric_type"
+        ],
+        "type": "object",
+        "properties": {
+          "metric_type": {
+            "title": "Metric Type",
+            "enum": [
+              "register_with_email_and_password",
+              "register_with_federated_identity"
+            ],
+            "type": "string"
+          },
+          "geographic_zone": {
+            "$ref": "#/components/schemas/UserWithGeographicZone"
+          }
+        }
+      },
+      "PasswordRecover": {
+        "title": "PasswordRecover",
+        "required": [
+          "metric_type"
+        ],
+        "type": "object",
+        "properties": {
+          "metric_type": {
+            "title": "Metric Type",
+            "enum": [
+              "password_recover"
+            ],
+            "type": "string"
+          }
+        }
+      },
+      "ScoreMetric": {
+        "title": "ScoreMetric",
+        "required": [
+          "metric_type",
+          "favourite_counter",
+          "review_counter",
+          "review_average"
+        ],
+        "type": "object",
+        "properties": {
+          "metric_type": {
+            "title": "Metric Type",
+            "enum": [
+              "score"
+            ],
+            "type": "string"
+          },
+          "favourite_counter": {
+            "title": "Favourite Counter",
+            "type": "integer"
+          },
+          "review_counter": {
+            "title": "Review Counter",
+            "type": "integer"
+          },
+          "review_average": {
+            "title": "Review Average",
+            "type": "number"
+          }
+        }
+      },
+      "TotalGeographicalResponse": {
+        "title": "TotalGeographicalResponse",
+        "type": "object",
+        "properties": {
+          "provinces": {
+            "title": "Provinces",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/UserByProvince"
+            },
+            "default": []
+          },
+          "departments": {
+            "title": "Departments",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/UserByDepartment"
+            },
+            "default": []
+          }
+        }
+      },
+      "TotalMetricsResponse": {
+        "title": "TotalMetricsResponse",
+        "type": "object",
+        "properties": {
+          "register_with_email_and_password": {
+            "title": "Register With Email And Password",
+            "type": "integer",
+            "default": 0
+          },
+          "register_with_federated_identity": {
+            "title": "Register With Federated Identity",
+            "type": "integer",
+            "default": 0
+          },
+          "login_with_email_and_password": {
+            "title": "Login With Email And Password",
+            "type": "integer",
+            "default": 0
+          },
+          "login_with_federated_identity": {
+            "title": "Login With Federated Identity",
+            "type": "integer",
+            "default": 0
+          },
+          "blocked_user": {
+            "title": "Blocked User",
+            "type": "integer",
+            "default": 0
+          },
+          "password_recover": {
+            "title": "Password Recover",
+            "type": "integer",
+            "default": 0
+          }
+        }
+      },
+      "TrainingPlanMetrics": {
+        "title": "TrainingPlanMetrics",
+        "required": [
+          "training_id"
+        ],
+        "type": "object",
+        "properties": {
+          "_id": {
+            "title": " Id",
+            "type": "string"
+          },
+          "training_id": {
+            "title": "Training Id",
+            "type": "string"
+          },
+          "favourite_counter": {
+            "title": "Favourite Counter",
+            "type": "integer",
+            "default": 0
+          },
+          "review_counter": {
+            "title": "Review Counter",
+            "type": "integer",
+            "default": 0
+          },
+          "completed_counter": {
+            "title": "Completed Counter",
+            "type": "integer",
+            "default": 0
+          },
+          "fulfilled_counter": {
+            "title": "Fulfilled Counter",
+            "type": "integer",
+            "default": 0
+          },
+          "review_average": {
+            "title": "Review Average",
+            "type": "number",
+            "default": 0
+          }
+        }
+      },
+      "TrainingPlanMetricsRequest": {
+        "title": "TrainingPlanMetricsRequest",
+        "required": [
+          "metric"
+        ],
+        "type": "object",
+        "properties": {
+          "metric": {
+            "title": "Metric",
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/ScoreMetric"
+              },
+              {
+                "$ref": "#/components/schemas/UsageMetric"
+              }
+            ],
+            "discriminator": {
+              "propertyName": "metric_type",
+              "mapping": {
+                "score": "#/components/schemas/ScoreMetric",
+                "usage": "#/components/schemas/UsageMetric"
+              }
+            }
+          }
+        }
+      },
+      "UsageMetric": {
+        "title": "UsageMetric",
+        "required": [
+          "metric_type",
+          "completed_counter",
+          "fulfilled_counter"
+        ],
+        "type": "object",
+        "properties": {
+          "metric_type": {
+            "title": "Metric Type",
+            "enum": [
+              "usage"
+            ],
+            "type": "string"
+          },
+          "completed_counter": {
+            "title": "Completed Counter",
+            "type": "integer"
+          },
+          "fulfilled_counter": {
+            "title": "Fulfilled Counter",
+            "type": "integer"
+          }
+        }
+      },
+      "UserByDepartment": {
+        "title": "UserByDepartment",
+        "type": "object",
+        "properties": {
+          "department": {
+            "title": "Department",
+            "type": "string",
+            "default": "No department found"
+          },
+          "counter": {
+            "title": "Counter",
+            "type": "integer",
+            "default": 0
+          }
+        }
+      },
+      "UserByProvince": {
+        "title": "UserByProvince",
+        "type": "object",
+        "properties": {
+          "province": {
+            "title": "Province",
+            "type": "string",
+            "default": "No province found"
+          },
+          "counter": {
+            "title": "Counter",
+            "type": "integer",
+            "default": 0
+          }
+        }
+      },
+      "UserMetric": {
+        "title": "UserMetric",
+        "required": [
+          "metric"
+        ],
+        "type": "object",
+        "properties": {
+          "_id": {
+            "title": " Id",
+            "type": "string"
+          },
+          "updated": {
+            "title": "Updated",
+            "type": "string",
+            "format": "date-time"
+          },
+          "metric": {
+            "title": "Metric",
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/NewUser"
+              },
+              {
+                "$ref": "#/components/schemas/Login"
+              },
+              {
+                "$ref": "#/components/schemas/BlockedUser"
+              },
+              {
+                "$ref": "#/components/schemas/PasswordRecover"
+              }
+            ],
+            "discriminator": {
+              "propertyName": "metric_type",
+              "mapping": {
+                "register_with_email_and_password": "#/components/schemas/NewUser",
+                "register_with_federated_identity": "#/components/schemas/NewUser",
+                "login_with_federated_identity": "#/components/schemas/Login",
+                "login_with_email_and_password": "#/components/schemas/Login",
+                "blocked_user": "#/components/schemas/BlockedUser",
+                "password_recover": "#/components/schemas/PasswordRecover"
+              }
+            }
+          }
+        },
+        "example": {
+          "metric": {
+            "metric_type": "register_with_email_and_password",
+            "latitude": -34.59854399794779,
+            "longitude": -58.412105357951795
+          }
+        }
+      },
+      "UserWithGeographicZone": {
+        "title": "UserWithGeographicZone",
+        "required": [
+          "province",
+          "department"
+        ],
+        "type": "object",
+        "properties": {
+          "province": {
+            "title": "Province",
+            "type": "string"
+          },
+          "department": {
+            "title": "Department",
+            "type": "string"
+          }
+        }
+      },
+      "AdminCreate": {
+        "title": "AdminCreate",
+        "required": [
+          "email",
+          "username",
+          "uid"
+        ],
+        "type": "object",
+        "properties": {
+          "email": {
+            "title": "Email",
+            "type": "string"
+          },
+          "username": {
+            "title": "Username",
+            "type": "string"
+          },
+          "uid": {
+            "title": "Uid",
+            "type": "string"
+          }
+        },
+        "example": {
+          "uid": "123",
+          "email": "a@mail.com",
+          "username": "admin10"
+        }
+      },
+      "AdminResponse": {
+        "title": "AdminResponse",
+        "required": [
+          "email",
+          "username",
+          "uid"
+        ],
+        "type": "object",
+        "properties": {
+          "email": {
+            "title": "Email",
+            "type": "string"
+          },
+          "username": {
+            "title": "Username",
+            "type": "string"
+          },
+          "uid": {
+            "title": "Uid",
+            "type": "string"
+          }
+        }
+      },
+      "CertificateRequest": {
+        "title": "CertificateRequest",
+        "required": [
+          "link"
+        ],
+        "type": "object",
+        "properties": {
+          "state": {
+            "title": "State",
+            "type": "boolean",
+            "description": "Indicates wheter the certificate has/has not/is pending to be aprroved"
+          },
+          "link": {
+            "title": "Link",
+            "type": "string",
+            "description": "Link to video associated to the request"
+          }
+        },
+        "example": {
+          "state": true,
+          "link": "video.com"
+        }
+      },
+      "CertificateReturn": {
+        "title": "CertificateReturn",
+        "required": [
+          "link",
+          "id",
+          "uid"
+        ],
+        "type": "object",
+        "properties": {
+          "state": {
+            "title": "State",
+            "type": "boolean",
+            "description": "Indicates wheter the certificate has/has not/is pending to be aprroved"
+          },
+          "link": {
+            "title": "Link",
+            "type": "string",
+            "description": "Link to video associated to the request"
+          },
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "uid": {
+            "title": "Uid",
+            "type": "string",
+            "description": "Trainer uid who requested the certificate"
+          }
+        },
+        "example": {
+          "id": 5,
+          "uid": "10",
+          "state": true,
+          "link": "video.com"
+        }
+      },
+      "FollowerReturn": {
+        "title": "FollowerReturn",
+        "required": [
+          "followed_uid",
+          "follower_uid"
+        ],
+        "type": "object",
+        "properties": {
+          "followed_uid": {
+            "title": "Followed Uid",
+            "type": "string"
+          },
+          "follower_uid": {
+            "title": "Follower Uid",
+            "type": "string"
+          }
+        }
+      },
+      "TrainingType": {
+        "title": "TrainingType",
+        "required": [
+          "name",
+          "descr"
+        ],
+        "type": "object",
+        "properties": {
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "descr": {
+            "title": "Descr",
+            "type": "string"
+          }
+        }
+      },
+      "UserBlock": {
+        "title": "UserBlock",
+        "required": [
+          "uid",
+          "blocked"
+        ],
+        "type": "object",
+        "properties": {
+          "uid": {
+            "title": "Uid",
+            "type": "string"
+          },
+          "blocked": {
+            "title": "Blocked",
+            "type": "boolean"
+          }
+        }
+      },
+      "UserCreate": {
+        "title": "UserCreate",
+        "required": [
+          "email",
+          "username",
+          "uid"
+        ],
+        "type": "object",
+        "properties": {
+          "email": {
+            "title": "Email",
+            "type": "string"
+          },
+          "username": {
+            "title": "Username",
+            "type": "string"
+          },
+          "birthday": {
+            "title": "Birthday",
+            "type": "string",
+            "description": "format YYYY-MM-DD",
+            "format": "date"
+          },
+          "level": {
+            "title": "Level",
+            "type": "string"
+          },
+          "latitude": {
+            "title": "Latitude",
+            "type": "number"
+          },
+          "longitude": {
+            "title": "Longitude",
+            "type": "number"
+          },
+          "height": {
+            "title": "Height",
+            "type": "integer",
+            "description": "unit: cm"
+          },
+          "weight": {
+            "title": "Weight",
+            "type": "integer",
+            "description": "unit: kg"
+          },
+          "gender": {
+            "title": "Gender",
+            "maxLength": 1,
+            "type": "string"
+          },
+          "target": {
+            "title": "Target",
+            "type": "string"
+          },
+          "trainingtypes": {
+            "title": "Trainingtypes",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "user_type": {
+            "title": "User Type",
+            "maxLength": 7,
+            "type": "string"
+          },
+          "image_url": {
+            "title": "Image Url",
+            "type": "string"
+          },
+          "token": {
+            "title": "Token",
+            "type": "string"
+          },
+          "blocked": {
+            "title": "Blocked",
+            "type": "boolean",
+            "default": false
+          },
+          "certified": {
+            "title": "Certified",
+            "type": "boolean",
+            "default": false
+          },
+          "uid": {
+            "title": "Uid",
+            "type": "string"
+          }
+        },
+        "example": {
+          "uid": "10",
+          "email": "user@mail.com",
+          "username": "user",
+          "birthday": "2000-12-21",
+          "level": "amateur",
+          "latitude": 50,
+          "longitude": 50,
+          "height": 180,
+          "weight": 80,
+          "gender": "M",
+          "target": "loss fat",
+          "trainingtypes": [
+            "Cardio"
+          ],
+          "user_type": "athlete",
+          "image_url": "image.com",
+          "token": "token_example",
+          "blocked": false,
+          "certified": false
+        }
+      },
+      "UserRequest": {
+        "title": "UserRequest",
+        "required": [
+          "email",
+          "username"
+        ],
+        "type": "object",
+        "properties": {
+          "email": {
+            "title": "Email",
+            "type": "string"
+          },
+          "username": {
+            "title": "Username",
+            "type": "string"
+          },
+          "birthday": {
+            "title": "Birthday",
+            "type": "string",
+            "description": "format YYYY-MM-DD",
+            "format": "date"
+          },
+          "level": {
+            "title": "Level",
+            "type": "string"
+          },
+          "latitude": {
+            "title": "Latitude",
+            "type": "number"
+          },
+          "longitude": {
+            "title": "Longitude",
+            "type": "number"
+          },
+          "height": {
+            "title": "Height",
+            "type": "integer",
+            "description": "unit: cm"
+          },
+          "weight": {
+            "title": "Weight",
+            "type": "integer",
+            "description": "unit: kg"
+          },
+          "gender": {
+            "title": "Gender",
+            "maxLength": 1,
+            "type": "string"
+          },
+          "target": {
+            "title": "Target",
+            "type": "string"
+          },
+          "trainingtypes": {
+            "title": "Trainingtypes",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "user_type": {
+            "title": "User Type",
+            "maxLength": 7,
+            "type": "string"
+          },
+          "image_url": {
+            "title": "Image Url",
+            "type": "string"
+          },
+          "token": {
+            "title": "Token",
+            "type": "string"
+          },
+          "blocked": {
+            "title": "Blocked",
+            "type": "boolean",
+            "default": false
+          },
+          "certified": {
+            "title": "Certified",
+            "type": "boolean",
+            "default": false
+          }
+        },
+        "example": {
+          "email": "user@mail.com",
+          "username": "user",
+          "birthday": "2000-12-21",
+          "level": "amateur",
+          "latitude": 50,
+          "longitude": 50,
+          "height": 180,
+          "weight": 80,
+          "gender": "M",
+          "target": "loss fat",
+          "trainingtypes": [
+            "Cardio"
+          ],
+          "user_type": "athlete",
+          "image_url": "image.com",
+          "token": "token_example",
+          "blocked": false,
+          "certified": false
+        }
+      },
+      "UserReturn": {
+        "title": "UserReturn",
+        "required": [
+          "email",
+          "username",
+          "uid"
+        ],
+        "type": "object",
+        "properties": {
+          "email": {
+            "title": "Email",
+            "type": "string"
+          },
+          "username": {
+            "title": "Username",
+            "type": "string"
+          },
+          "birthday": {
+            "title": "Birthday",
+            "type": "string",
+            "description": "format YYYY-MM-DD",
+            "format": "date"
+          },
+          "level": {
+            "title": "Level",
+            "type": "string"
+          },
+          "latitude": {
+            "title": "Latitude",
+            "type": "number"
+          },
+          "longitude": {
+            "title": "Longitude",
+            "type": "number"
+          },
+          "height": {
+            "title": "Height",
+            "type": "integer",
+            "description": "unit: cm"
+          },
+          "weight": {
+            "title": "Weight",
+            "type": "integer",
+            "description": "unit: kg"
+          },
+          "gender": {
+            "title": "Gender",
+            "maxLength": 1,
+            "type": "string"
+          },
+          "target": {
+            "title": "Target",
+            "type": "string"
+          },
+          "trainingtypes": {
+            "title": "Trainingtypes",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "user_type": {
+            "title": "User Type",
+            "maxLength": 7,
+            "type": "string"
+          },
+          "image_url": {
+            "title": "Image Url",
+            "type": "string"
+          },
+          "token": {
+            "title": "Token",
+            "type": "string"
+          },
+          "blocked": {
+            "title": "Blocked",
+            "type": "boolean",
+            "default": false
+          },
+          "certified": {
+            "title": "Certified",
+            "type": "boolean",
+            "default": false
+          },
+          "uid": {
+            "title": "Uid",
+            "type": "string"
+          }
+        },
+        "example": {
+          "uid": "10",
+          "email": "user@mail.com",
+          "username": "user",
+          "birthday": "2000-12-21",
+          "level": "amateur",
+          "latitude": 50,
+          "longitude": 50,
+          "height": 180,
+          "weight": 80,
+          "gender": "M",
+          "target": "loss fat",
+          "trainingtypes": [
+            "Cardio"
+          ],
+          "user_type": "athlete",
+          "image_url": "image.com",
+          "token": "token_example",
+          "blocked": false,
+          "certified": false
+        }
+      },
+      "ValidationError": {
+        "title": "ValidationError",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "type": "object",
+        "properties": {
+          "loc": {
+            "title": "Location",
+            "type": "array",
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            }
+          },
+          "msg": {
+            "title": "Message",
+            "type": "string"
+          },
+          "type": {
+            "title": "Error Type",
+            "type": "string"
+          }
+        }
+      },
+      "BlockTrainingPlan": {
+        "title": "BlockTrainingPlan",
+        "required": [
+          "uid",
+          "blocked"
+        ],
+        "type": "object",
+        "properties": {
+          "uid": {
+            "title": "Uid",
+            "type": "string"
+          },
+          "blocked": {
+            "title": "Blocked",
+            "type": "boolean"
+          }
+        }
+      },
+      "Difficulty": {
+        "title": "Difficulty",
+        "enum": [
+          "beginner",
+          "intermediate",
+          "advanced"
+        ],
+        "type": "string",
+        "description": "An enumeration."
+      },
+      "Review": {
+        "title": "Review",
+        "required": [
+          "plan_id",
+          "user_id",
+          "score"
+        ],
+        "type": "object",
+        "properties": {
+          "_id": {
+            "title": " Id",
+            "type": "string"
+          },
+          "plan_id": {
+            "title": "Plan Id",
+            "type": "string"
+          },
+          "user_id": {
+            "title": "User Id",
+            "type": "string"
+          },
+          "review": {
+            "title": "Review",
+            "maxLength": 240,
+            "type": "string"
+          },
+          "score": {
+            "title": "Score",
+            "maximum": 5,
+            "exclusiveMinimum": false,
+            "type": "integer"
+          }
+        },
+        "example": {
+          "plan_id": "c59710ef-f5d0-41ba-a787-ad8eb739ef4c",
+          "user_id": "7ca0fa95-af47-40b4-8e39-2fae5ee2667a",
+          "review": "Some review",
+          "score": 4
+        }
+      },
+      "ReviewAverageScoreResponse": {
+        "title": "ReviewAverageScoreResponse",
+        "required": [
+          "mean"
+        ],
+        "type": "object",
+        "properties": {
+          "mean": {
+            "title": "Mean",
+            "type": "number"
+          }
+        },
+        "example": {
+          "mean": 4.5
+        }
+      },
+      "ReviewResponse": {
+        "title": "ReviewResponse",
+        "required": [
+          "reviews"
+        ],
+        "type": "object",
+        "properties": {
+          "reviews": {
+            "title": "Reviews",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Review"
+            }
+          }
+        },
+        "example": {
+          "reviews": [
+            {
+              "plan_id": "c59710ef-f5d0-41ba-a787-ad8eb739ef4c",
+              "user_id": "7ca0fa95-af47-40b4-8e39-2fae5ee2667a",
+              "review": "Some review",
+              "score": 4
+            },
+            {
+              "plan_id": "c59710ef-f5d0-41bc-a787-ad8eb739ef4d",
+              "user_id": "9ca0fa95-a847-40b4-8e39-2fae5ee2667a",
+              "review": "Another review",
+              "score": 3
+            }
+          ]
+        }
+      },
+      "TrainingPlan": {
+        "title": "TrainingPlan",
+        "required": [
+          "trainer",
+          "title",
+          "difficulty",
+          "training_types",
+          "goals",
+          "duration"
+        ],
+        "type": "object",
+        "properties": {
+          "_id": {
+            "title": " Id",
+            "type": "string"
+          },
+          "trainer": {
+            "title": "Trainer",
+            "type": "string"
+          },
+          "title": {
+            "title": "Title",
+            "maxLength": 200,
+            "minLength": 3,
+            "type": "string"
+          },
+          "description": {
+            "title": "Description",
+            "maxLength": 5000,
+            "type": "string"
+          },
+          "difficulty": {
+            "$ref": "#/components/schemas/Difficulty"
+          },
+          "training_types": {
+            "title": "Training Types",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "goals": {
+            "title": "Goals",
+            "type": "array",
+            "items": {}
+          },
+          "duration": {
+            "title": "Duration",
+            "type": "integer"
+          },
+          "blocked": {
+            "title": "Blocked",
+            "type": "boolean",
+            "default": false
+          },
+          "favourited_by": {
+            "title": "Favourited By",
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "default": []
+          }
+        },
+        "example": {
+          "trainer": "c59710ef-f5d0-41ba-a787-ad8eb739ef4c",
+          "title": "Sample training plan",
+          "description": "Training plan description",
+          "difficulty": "beginner",
+          "training_types": [
+            "cardio"
+          ],
+          "goals": [
+            {
+              "name": "123123",
+              "category": "Repeticiones",
+              "amount": "123",
+              "media": [
+                "imagen.com"
+              ]
+            }
+          ],
+          "duration": 90,
+          "blocked": false,
+          "favourited_by": [
+            "7ca0fa95-af47-40b4-8e39-2fae5ee2667a"
+          ]
+        }
+      },
+      "UpdateFavourite": {
+        "title": "UpdateFavourite",
+        "required": [
+          "training_id"
+        ],
+        "type": "object",
+        "properties": {
+          "training_id": {
+            "title": "Training Id",
+            "type": "string"
+          }
+        },
+        "example": {
+          "training_id": "7ca0fa95-af47-40b4-8e39-2fae5ee2667a"
+        }
+      },
+      "UpdateReview": {
+        "title": "UpdateReview",
+        "required": [
+          "score"
+        ],
+        "type": "object",
+        "properties": {
+          "review": {
+            "title": "Review",
+            "maxLength": 240,
+            "type": "string"
+          },
+          "score": {
+            "title": "Score",
+            "maximum": 5,
+            "exclusiveMinimum": false,
+            "type": "integer"
+          }
+        },
+        "example": {
+          "review": "Updated review",
+          "score": 5
+        }
+      },
+      "UpdateTrainingPlan": {
+        "title": "UpdateTrainingPlan",
+        "type": "object",
+        "properties": {
+          "title": {
+            "title": "Title",
+            "maxLength": 200,
+            "minLength": 3,
+            "type": "string"
+          },
+          "description": {
+            "title": "Description",
+            "maxLength": 5000,
+            "type": "string"
+          },
+          "difficulty": {
+            "$ref": "#/components/schemas/Difficulty"
+          },
+          "training_types": {
+            "title": "Training Types",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "goals": {
+            "title": "Goals",
+            "type": "array",
+            "items": {}
+          },
+          "duration": {
+            "title": "Duration",
+            "type": "integer"
+          },
+          "blocked": {
+            "title": "Blocked",
+            "type": "boolean"
+          }
+        },
+        "example": {
+          "title": "Sample training plan",
+          "description": "Training plan description",
+          "difficulty": "advanced",
+          "training_types": [
+            "cardio"
+          ],
+          "goals": [
+            {
+              "name": "123123",
+              "category": "Repeticiones",
+              "amount": "123",
+              "media": [
+                "imagen.com"
+              ]
+            }
+          ],
+          "duration": 30,
+          "blocked": false
+        }
+      },
+      "Dashboard": {
+        "title": "Dashboard",
+        "required": [
+          "distance",
+          "time",
+          "calories",
+          "milestones"
+        ],
+        "type": "object",
+        "properties": {
+          "distance": {
+            "title": "Distance",
+            "type": "number",
+            "description": "Distance in meters"
+          },
+          "time": {
+            "title": "Time",
+            "type": "string",
+            "format": "time"
+          },
+          "calories": {
+            "title": "Calories",
+            "type": "number"
+          },
+          "milestones": {
+            "title": "Milestones",
+            "type": "integer"
+          }
+        }
+      },
+      "Exercise": {
+        "title": "Exercise",
+        "required": [
+          "name",
+          "category",
+          "amount",
+          "exercise_type",
+          "finished",
+          "time",
+          "steps"
+        ],
+        "type": "object",
+        "properties": {
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "category": {
+            "title": "Category",
+            "type": "string"
+          },
+          "amount": {
+            "title": "Amount",
+            "type": "integer"
+          },
+          "exercise_type": {
+            "title": "Exercise Type",
+            "type": "string"
+          },
+          "finished": {
+            "title": "Finished",
+            "type": "boolean"
+          },
+          "time": {
+            "title": "Time",
+            "type": "string",
+            "format": "time"
+          },
+          "steps": {
+            "title": "Steps",
+            "type": "integer"
+          }
+        },
+        "example": {
+          "name": "flexiones",
+          "category": "repeticiones",
+          "amount": "20",
+          "exercise_type": "Fuerza",
+          "finished": true,
+          "time": "01:10:15",
+          "steps": 50
+        }
+      },
+      "ExerciseRequest": {
+        "title": "ExerciseRequest",
+        "required": [
+          "training_id",
+          "exercises"
+        ],
+        "type": "object",
+        "properties": {
+          "training_id": {
+            "title": "Training Id",
+            "type": "string"
+          },
+          "exercises": {
+            "title": "Exercises",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Exercise"
+            }
+          }
+        }
+      },
+      "Goal": {
+        "title": "Goal",
+        "required": [
+          "title",
+          "training_type",
+          "amount",
+          "goal_type",
+          "limit"
+        ],
+        "type": "object",
+        "properties": {
+          "title": {
+            "title": "Title",
+            "type": "string",
+            "description": "Title of the goal"
+          },
+          "training_type": {
+            "title": "Training Type",
+            "type": "string",
+            "description": "Training type of the goal"
+          },
+          "amount": {
+            "title": "Amount",
+            "type": "integer",
+            "description": "Amount of points/calories/steps of thje goal"
+          },
+          "goal_type": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/GoalType"
+              }
+            ],
+            "description": "Goal type"
+          },
+          "limit": {
+            "title": "Limit",
+            "type": "string",
+            "description": "Time limit of the goal"
+          },
+          "notified": {
+            "title": "Notified",
+            "type": "boolean",
+            "description": "Indicates wheter the user has been notified from this goal been achieved",
+            "default": false
+          }
+        }
+      },
+      "GoalReturn": {
+        "title": "GoalReturn",
+        "required": [
+          "title",
+          "training_type",
+          "amount",
+          "goal_type",
+          "limit"
+        ],
+        "type": "object",
+        "properties": {
+          "title": {
+            "title": "Title",
+            "type": "string",
+            "description": "Title of the goal"
+          },
+          "training_type": {
+            "title": "Training Type",
+            "type": "string",
+            "description": "Training type of the goal"
+          },
+          "amount": {
+            "title": "Amount",
+            "type": "integer",
+            "description": "Amount of points/calories/steps of thje goal"
+          },
+          "goal_type": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/GoalType"
+              }
+            ],
+            "description": "Goal type"
+          },
+          "limit": {
+            "title": "Limit",
+            "type": "string",
+            "description": "Time limit of the goal"
+          },
+          "notified": {
+            "title": "Notified",
+            "type": "boolean",
+            "description": "Indicates wheter the user has been notified from this goal been achieved",
+            "default": false
+          },
+          "percentage": {
+            "title": "Percentage",
+            "type": "number",
+            "description": "Indicates percentage of the goal achieved by the user",
+            "default": 0
+          },
+          "completed": {
+            "title": "Completed",
+            "type": "boolean",
+            "description": "Indicates wheter the usar has/has not completed the goal",
+            "default": false
+          }
+        }
+      },
+      "GoalType": {
+        "title": "GoalType",
+        "enum": [
+          "points",
+          "calories",
+          "steps"
+        ],
+        "type": "string",
+        "description": "An enumeration."
+      },
+      "Training": {
+        "title": "Training",
+        "required": [
+          "user_id",
+          "training_id",
+          "exercises"
+        ],
+        "type": "object",
+        "properties": {
+          "_id": {
+            "title": " Id",
+            "type": "string"
+          },
+          "user_id": {
+            "title": "User Id",
+            "type": "string"
+          },
+          "training_id": {
+            "title": "Training Id",
+            "type": "string"
+          },
+          "exercises": {
+            "title": "Exercises",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Exercise"
+            }
+          },
+          "updated": {
+            "title": "Updated",
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "UserGoalsReturn": {
+        "title": "UserGoalsReturn",
+        "required": [
+          "user_id",
+          "goals"
+        ],
+        "type": "object",
+        "properties": {
+          "_id": {
+            "title": " Id",
+            "type": "string"
+          },
+          "user_id": {
+            "title": "User Id",
+            "type": "string"
+          },
+          "goals": {
+            "title": "Goals",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/GoalReturn"
+            }
+          }
+        }
+      }
+    }
+  }
+}
