@@ -9,7 +9,6 @@ import (
 	"net/url"
 	"path"
 	"strings"
-	"time"
 
 	"fiufit.api.gateway/internal/auth"
 	"github.com/gin-gonic/gin"
@@ -75,13 +74,17 @@ func SetQuery(key, value string) gin.HandlerFunc {
 func ReverseProxy(url *url.URL) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		proxy := httputil.NewSingleHostReverseProxy(url)
-		client_ip := c.ClientIP()
-		proxy.ErrorHandler = func(rw http.ResponseWriter, r *http.Request, e error) {
-			log.WithFields(log.Fields{"uri": r.RequestURI, "client_ip": client_ip, "error": e.Error()}).Info("Reverse proxy failed")
-			rw.WriteHeader(http.StatusBadGateway)
-		}
+		clientIp := c.ClientIP()
+		proxy.ErrorHandler = getErrorHandler(clientIp)
 		c.Request.Host = url.Host
 		proxy.ServeHTTP(c.Writer, c.Request)
+	}
+}
+
+func getErrorHandler(clientIP string) func(http.ResponseWriter, *http.Request, error) {
+	return func(rw http.ResponseWriter, r *http.Request, e error) {
+		log.WithFields(log.Fields{"uri": r.RequestURI, "client_ip": clientIP, "error": e.Error()}).Info("Reverse proxy failed")
+		rw.WriteHeader(http.StatusBadGateway)
 	}
 }
 
@@ -285,21 +288,8 @@ func RemovePathFromRequestURL(path string) gin.HandlerFunc {
 	}
 }
 
-
 func Logger() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		// Starting time request
-		startTime := time.Now()
-
-		// Processing request
-		ctx.Next()
-
-		// End Time request
-		endTime := time.Now()
-
-		// execution time
-		latencyTime := endTime.Sub(startTime)
-
 		// Request method
 		requestMethod := ctx.Request.Method
 
@@ -316,7 +306,6 @@ func Logger() gin.HandlerFunc {
 			"method":    requestMethod,
 			"uri":       requestURI,
 			"status":    statusCode,
-			"latency":   latencyTime,
 			"client_ip": clientIP,
 		}).Info("HTTP Request")
 
