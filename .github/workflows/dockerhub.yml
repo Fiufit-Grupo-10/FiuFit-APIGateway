@@ -65,4 +65,4 @@ jobs:
         run: |
           echo "$CREDENTIALS" >> okteto-kube.config
           export KUBECONFIG=$PWD/okteto-kube.config:${KUBECONFIG:-$HOME}/.kube/config}
-          kubectl rollout restart deployment/service-users --namespace=franco-jyq
+          kubectl rollout restart deployment/service-external-gateway --namespace=franco-jyq
