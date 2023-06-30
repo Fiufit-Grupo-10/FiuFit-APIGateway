@@ -168,8 +168,7 @@ func Admin(usersUrl *url.URL, trainersURL *url.URL, metricsURL *url.URL, s auth.
 
 		router.GET("/admins/metrics/totals",
 			middleware.AuthorizeUser(s),
-			middleware.AuthorizeAdmin(&*usersUrl),
-			middleware.RemovePathFromRequestURL("/admins"),
+			middleware.AuthorizeAdmin(&*usersUrl),			middleware.RemovePathFromRequestURL("/admins"),
 			middleware.ReverseProxy(&*metricsURL))
 
 		router.GET("/admins/metrics/locations",
