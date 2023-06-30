@@ -45,7 +45,7 @@ func TestAuthorize(t *testing.T) {
 			t.Errorf("Key %s wasn't found", "User-UID")
 			return
 		}
-		
+
 		UID, _ := anyUID.(string)
 		assert_eq(t, UID, "123")
 
@@ -65,7 +65,7 @@ func TestAuthorize(t *testing.T) {
 		if found {
 			t.Errorf("Key %s should't exist found", "User-UID")
 		}
-		
+
 		assert_eq(t, c.Writer.Status(), http.StatusUnauthorized)
 		assert_eq(t, c.IsAborted(), true)
 	})
@@ -232,6 +232,26 @@ func TestCreateUser(t *testing.T) {
 		got := w.Result().StatusCode
 		assert_eq(t, got, http.StatusConflict)
 	})
+
+	t.Run("Creating user with federated identity, gets the user data from the auth service", func(t *testing.T) {
+		w := CreateTestResponseRecorder()
+		c, _ := gin.CreateTestContext(w)
+
+		s := &AuthTestService{}
+		signUpData := auth.SignUpModel{Federated: true, UID: "a"}
+		signUpDataJSON, _ := json.Marshal(signUpData)
+		bodyBytes := bytes.NewReader(signUpDataJSON)
+		req, _ := http.NewRequest(http.MethodGet, "/test", bodyBytes)
+		c.Request = req
+		CreateUser(s)(c)
+		
+		assert_eq(t, s.GetUserCalls, 1)
+		body, _ := io.ReadAll(c.Request.Body)
+		defer c.Request.Body.Close()
+		userData := auth.UserModel{UID: "a", Username: "user", Email: "email@xyz.com"}
+		userDataJSON, _ := json.Marshal(userData)
+		assert_eq(t, string(body), string(userDataJSON))
+	})
 }
 
 func TestAuthorizeAdmin(t *testing.T) {
@@ -387,7 +407,6 @@ func TestRemovePathFromRequestURL(t *testing.T) {
 	})
 }
 
-
 func TestBlockUsersInAuthService(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 	t.Run("Block five users", func(t *testing.T) {
@@ -452,6 +471,102 @@ func TestBlockUsersInAuthService(t *testing.T) {
 	})
 }
 
+func TestLoggingMiddleware(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	t.Run("Log data", func(t *testing.T) {
+		// This is nasty
+		buf := bytes.Buffer{}
+		log.SetOutput(&buf)
+		formatter := &log.JSONFormatter{}
+		formatter.DisableTimestamp = true
+		log.SetFormatter(formatter)
+
+		w := CreateTestResponseRecorder()
+		c, _ := gin.CreateTestContext(w)
+		req, _ := http.NewRequest(http.MethodGet, "www.example.com/test", nil)
+		req.RequestURI = "uri"
+		c.Writer.WriteHeader(http.StatusOK)
+		c.Request = req
+
+		Logger()(c)
+
+		want := "{\"client_ip\":\"\",\"level\":\"info\",\"method\":\"GET\",\"msg\":\"HTTP Request\",\"status\":200,\"uri\":\"uri\"}\n"
+		assert_eq(t, buf.String(), want)
+	})
+}
+
+
+func TestCreateAdmin(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	t.Run("Send valid sign up data, create an admin and put the admin data in the request body", func(t *testing.T) {
+		w := CreateTestResponseRecorder()
+		c, _ := gin.CreateTestContext(w)
+
+		s := &AuthTestService{}
+
+		signUpData := auth.SignUpModel{
+			Email: "abc@xyz.com", Username: "abc", Password: "123",
+		}
+		signUpDataJSON, _ := json.Marshal(signUpData)
+		bodyBytes := bytes.NewReader(signUpDataJSON)
+		req, _ := http.NewRequest(http.MethodPost, "/test", bodyBytes)
+
+		c.Request = req
+
+		CreateAdmin(s)(c)
+
+		assert_eq(t, s.CreateUserCalls, 1)
+		body, _ := io.ReadAll(c.Request.Body)
+		defer c.Request.Body.Close()
+
+		adminData := auth.UserModel{UID: "123", Username: "abc", Email: "abc@xyz.com"}
+		adminDataJSON, _ := json.Marshal(adminData)
+
+		assert_eq(t, string(body), string(adminDataJSON))
+	})
+
+	// TODO: Missing testing that the body contains some context of the error
+	t.Run("If the body contains invalid JSON the middleware aborts and sets the response status to Bad Request", func(t *testing.T) {
+		w := CreateTestResponseRecorder()
+		c, _ := gin.CreateTestContext(w)
+
+		s := &AuthTestService{}
+		req, _ := http.NewRequest(http.MethodGet, "/test", nil)
+		c.Request = req
+		CreateAdmin(s)(c)
+
+		if !c.IsAborted() {
+			t.Error("The middleware didn't abort")
+		}
+
+		c.Writer.WriteHeaderNow()
+		got := w.Result().StatusCode
+		assert_eq(t, got, http.StatusBadRequest)
+	})
+	// TODO: Missing testing that the body contains some context of the error
+	t.Run("If the sign up data in the body is invalid the middleware aborts and sets the response status to Conflict", func(t *testing.T) {
+		w := CreateTestResponseRecorder()
+		c, _ := gin.CreateTestContext(w)
+
+		s := &AuthTestService{}
+		signUpData := auth.SignUpModel{
+			Email: "abc@xyz.com", Username: "abc", Password: "1",
+		}
+		signUpDataJSON, _ := json.Marshal(signUpData)
+		bodyBytes := bytes.NewReader(signUpDataJSON)
+		req, _ := http.NewRequest(http.MethodGet, "/test", bodyBytes)
+		c.Request = req
+		CreateAdmin(s)(c)
+
+		if !c.IsAborted() {
+			t.Error("The middleware didn't abort")
+		}
+
+		c.Writer.WriteHeaderNow()
+		got := w.Result().StatusCode
+		assert_eq(t, got, http.StatusConflict)
+	})
+}
 // The types below are necessary for tests to run Gin requires that
 // the recorder implements the CloseNotify interface. So we generated
 // a wrapper that implements it.
@@ -477,14 +592,15 @@ func CreateTestResponseRecorder() *TestResponseRecorder {
 
 type AuthTestService struct {
 	CreateUserCalls     int
+	GetUserCalls int
 	SetBlockStatusCalls int
 }
 
 func (a *AuthTestService) CreateUser(s auth.SignUpModel) (auth.UserModel, error) {
+	a.CreateUserCalls += 1
 	if len(s.Password) < 3 {
 		return auth.UserModel{}, errors.New("too short")
 	}
-	a.CreateUserCalls += 1
 	return auth.UserModel{UID: "123", Username: "abc", Email: "abc@xyz.com"}, nil
 }
 
@@ -496,10 +612,15 @@ func (a *AuthTestService) VerifyToken(token string) (string, error) {
 }
 
 func (a *AuthTestService) GetUser(uid string) (auth.UserModel, error) {
+	a.GetUserCalls += 1
 	if uid == "z" {
 		return auth.UserModel{}, errors.New("user doesn't exist")
 	}
-	return auth.UserModel{}, nil
+	return auth.UserModel{
+		Email:    "email@xyz.com",
+		Username: "user",
+		UID:      uid,
+	}, nil
 }
 
 func (a *AuthTestService) SetBlockStatus(uid string, blocked bool) error {
