@@ -33,7 +33,7 @@ func main() {
 	tracer.Start(tracer.WithService(config.ServiceName))
 	defer tracer.Stop()
 
-	gateway := gateway.New(
+	gateway := gateway.New(c,
 		gateway.Users(usersURL, f),
 		gateway.Admin(usersURL, trainingsURL, metricsURL, f),
 		gateway.Trainings(trainingsURL, f),

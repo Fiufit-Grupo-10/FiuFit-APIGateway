@@ -6,6 +6,7 @@ import (
 
 	"fiufit.api.gateway/cmd/middleware"
 	"fiufit.api.gateway/internal/auth"
+	"fiufit.api.gateway/internal/config"
 	"github.com/gin-gonic/gin"
 	"github.com/mvrilo/go-redoc"
 	ginredoc "github.com/mvrilo/go-redoc/gin"
@@ -26,7 +27,7 @@ func (g *Gateway) Run(addr ...string) {
 	g.router.Run(addr...)
 }
 
-func New(configs ...RouterConfig) *Gateway {
+func New(c *config.Config ,routers ...RouterConfig) *Gateway {
 	doc := redoc.Redoc{
 			Title:       "FiuFit API Gateway",
 			Description: "API Gateway for FiuFit App",
@@ -35,7 +36,9 @@ func New(configs ...RouterConfig) *Gateway {
 			DocsPath:    "/docs",
 	}
 	router := gin.New()
-	router.Use(ginredoc.New(doc))
+	if !c.IsDevEnviroment {
+		router.Use(ginredoc.New(doc))
+	}
 	router.Use(gin.Recovery())
 	router.Use(middleware.Logger())
 
@@ -43,7 +46,7 @@ func New(configs ...RouterConfig) *Gateway {
 	router.Use(middleware.Cors())
 
 
-	for _, option := range configs {
+	for _, option := range routers {
 		option(router)
 	}
 	return &Gateway{router}
